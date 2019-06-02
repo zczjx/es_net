@@ -3,14 +3,16 @@
 
 import numpy as np
 from active_func import *
+from common_func import *
 
 class es_net(object):
 
-    def __init__(self, layers, active_func=sigmoid):
+    def __init__(self, layers, active_func=sigmoid, out_func=identity_equal):
         self.layers = layers
         self.weight = list()
         self.bias = list()
         self.active_func = active_func;
+        self.output_func = out_func
         
     def setup_nn_param(self, layer_idx, weight_arr, bias_arr):
         self.weight.append(weight_arr)
@@ -20,11 +22,12 @@ class es_net(object):
         n = 0
         z = input_x
         while n < self.layers:
+            print('es_nn layer: ', n)
+            print('input val: ', z)
             a = np.dot(z, self.weight[n]) + self.bias[n]
             z = self.active_func(a)
+            print('output val: ', z)
+            print('')
             n = n + 1
-        y = self.identity_fun(z)
+        y = self.output_func(z)
         return y
-    
-    def identity_fun(self, x):
-        return x
