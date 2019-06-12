@@ -9,8 +9,8 @@ class es_net(object):
 
     def __init__(self, layers, active_func=sigmoid, out_func=identity_equal):
         self.layers = layers
-        self.weight = list()
-        self.bias = list()
+        self.weight = []
+        self.bias = []
         self.active_func = active_func;
         self.output_func = out_func
         

@@ -37,16 +37,30 @@ def numerical_gradient(func, x):
 
 def gradient_descent(func, init_x, learning_rate=0.01, step_num=100):
     x = init_x
+    x_trace = []
 
     for i in range(step_num):
+        x_trace.append(x.copy())
         grad = numerical_gradient(func=func, x=x)
         x -= learning_rate * grad
     
-    return x
+    return x, np.array(x_trace)
 
 
 
 if __name__=='__main__':
+    init_x = np.array([-5.0, 4.0])
+    x, xtrace = gradient_descent(func=square_sum_func, init_x=init_x, 
+                    learning_rate=0.1, step_num=40)
+
+    plt.plot( [-5, 5], [0,0], '--b')
+    plt.plot( [0,0], [-5, 5], '--b')
+    plt.plot(xtrace[:,0], xtrace[:,1], 'o')
+    plt.xlim(-5, 5)
+    plt.ylim(-5, 5)
+    plt.xlabel("X0")
+    plt.ylabel("X1")
+
     fig = plt.figure()
     ax = Axes3D(fig)
     xval = np.arange(-5, 5, 0.1)
@@ -57,3 +71,4 @@ if __name__=='__main__':
     plt.ylabel('y')
     ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap='winter')
     plt.show()
+
