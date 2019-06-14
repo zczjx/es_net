@@ -9,11 +9,14 @@ def identity_equal(x):
     return x
 
 def softmax(x):
-    max_bia = np.max(x)
-    exp_arr = np.exp(x - max_bia)
-    sum_exp_arr = np.sum(exp_arr)
-    y = exp_arr / sum_exp_arr
-    return y
+    if x.ndim == 2:
+        x = x.T
+        x = x - np.max(x, axis=0)
+        y = np.exp(x) / np.sum(np.exp(x), axis=0)
+        return y.T 
+
+    x = x - np.max(x) # avoid overflow
+    return np.exp(x) / np.sum(np.exp(x))
 
 def square_sum_func(x):
     return x[0]**2 + x[1]**2
@@ -22,7 +25,9 @@ def numerical_gradient(func, x):
     dx = 1e-4
     grad_arr = np.zeros_like(x)
 
-    for idx in range(x.size):
+    it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
+    while not it.finished:
+        idx = it.multi_index
         xval_save = x[idx]
         x[idx] = xval_save + dx
         fdx1 = func(x)
@@ -32,6 +37,7 @@ def numerical_gradient(func, x):
 
         grad_arr[idx] = (fdx1 - fdx2) / (2 * dx)
         x[idx] = xval_save
+        it.iternext()
 
     return grad_arr
 
