@@ -31,7 +31,7 @@ if __name__=='__main__':
     train_data_num = train_data.shape[0]
     batch_size = 100
     iter_per_epoch = max(train_data_num / batch_size, 1)
-    training_iters = 1200
+    training_iters = 1001
 
     print('train_data_num: ', train_data_num)
     print('iter_per_epoch: ', iter_per_epoch)
@@ -50,12 +50,29 @@ if __name__=='__main__':
         loss_val = dnn.loss(train_data_batch, train_label_batch)
         train_loss_list.append(loss_val)
 
-        if i % 30 == 0:
+        if i % 20 == 0:
             train_acc = dnn.accuracy(train_data, train_label)
             test_acc = dnn.accuracy(test_data, test_label)
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
             print("train acc, test acc | " + str(train_acc) + ", " + str(test_acc))
+
+    # draw
+
+    # markers = {'train': 'o', 'test': 's'}
+    # x = np.arange(len(train_loss_list))
+    x = np.arange(len(train_acc_list))
+    # plt.plot(x, train_loss_list, label='train acc')
+    plt.plot(x, train_acc_list, label='train acc')
+    plt.plot(x, test_acc_list, label='test acc', linestyle='--')
+    # plt.xlabel("training_iters")
+    # plt.ylabel("loss_val")
+    plt.xlabel("epochs")
+    plt.ylabel("accuracy")
+   # plt.ylim(0, 1.0)
+    plt.legend(loc='lower right')
+    plt.show()
+
 
 
 
