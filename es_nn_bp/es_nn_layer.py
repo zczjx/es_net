@@ -66,7 +66,7 @@ class affine_layer(object):
 
     def forward(self, x):
         self.x = x
-        out = np.dot(x, self.w) + self.b
+        out = np.dot(x, self.W) + self.b
         return out
 
     def backward(self, dout):
