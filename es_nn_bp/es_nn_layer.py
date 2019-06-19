@@ -146,7 +146,51 @@ class conv_layer(object):
         dx = col2im(dcol. self.x.shape, filter_height, filter_weight , self.stride, self.pad)
 
         return dx
-       
+
+class pooling_layer(object):
+    def __init__(self, pool_h, pool_w, stride=1, pad=0):
+        self.name = 'pooling_layer'
+        self.pool_h = pool_h
+        self.pool_w = pool_w
+        self.stride = stride
+        self.pad = pad
+        self.x = None
+        self.arg_max = None
+
+    def update_layer_nn_param(self, learning_rate=0.1):
+        pass
+
+    def print_layer_name(self):
+        print(self.name)
+    
+    def forward(self, x):
+        num, channels, in_height, in_weight = x.shape
+        out_h = int(1 + (in_height - self.pool_h) / self.stride)
+        out_w = int(1 + (in_weight - self.pool_w) / self.stride)
+
+        col = im2col(x, self.pool_h, self.pool_w, self.stride, self.pad)
+        col = col.reshape(-1, self.pool_h * self.pool_w)
+
+        arg_max = np.argmax(col, axis=1)
+        out = np.max(col, axis=1)
+        out = out.reshape(num, out_h, out_w, channels).transpose(0, 3, 1, 2)
+
+        self.x = x
+        self.arg_max =arg_max
+
+        return out
+
+
+    def backward(self, dout):
+        dout = dout.transpose(0, 2, 3, 1)
+        pool_size = self.pool_h * self.pool_w
+        dmax = np.zeros((dout.size, pool_size))
+        dmax[np.arange(self.arg_max.size), self.arg_max.flatten()] = dout.flatten()
+        dmax = dmax.reshape(dout.shape + (pool_size,))
+
+        dcol = dmax.reshape(dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1)
+        dx = col2im(dcol, self.x.shape, self.pool_h, self.pool_w, self.stride, self.pad)
+        return dx
 
 
 if __name__=='__main__':
