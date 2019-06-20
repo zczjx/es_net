@@ -12,28 +12,57 @@ from es_nn_layer import *
 from mnist import load_mnist
 
 if __name__=='__main__':
-    (train_data, train_label), (test_data, test_label) = load_mnist()
+    (train_data, train_label), (test_data, test_label) = load_mnist(flatten=False)
     weight_init_std=0.01
     image_size = 28 * 28
     hidden_nodes = 100
     output_nodes = 10
+    input_dim = (1, 28, 28)
 
     # random init the dnn param
     dnn = es_net()
 
-    dnn_weight_arr = weight_init_std * np.random.randn(image_size, hidden_nodes)
+    # Conv layer
+    filter_num = 30
+    filter_size = 5
+    filter_pad = 0
+    filter_stride = 1
+    input_size = input_dim[1]
+    conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
+    pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
+
+    dnn_weight_arr = weight_init_std * \
+                    np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
+    dnn_bias_arr = np.zeros(filter_num)
+
+    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, filter_pad)
+    dnn.add_layer(layer_obj=layer_tmp)
+
+    # ReLU layer
+    layer_tmp = ReLU_layer()
+    dnn.add_layer(layer_obj=layer_tmp)
+
+    # Pooling layer
+    layer_tmp = pooling_layer(pool_h=2, pool_w=2, stride=2, pad=0)
+    dnn.add_layer(layer_obj=layer_tmp)
+
+    # Affine layer
+    dnn_weight_arr = weight_init_std * np.random.randn(pool_output_size, hidden_nodes)
     dnn_bias_arr = np.zeros(hidden_nodes)
     layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
     dnn.add_layer(layer_obj=layer_tmp)
 
+    # ReLU layer
     layer_tmp = ReLU_layer()
     dnn.add_layer(layer_obj=layer_tmp)
 
+    # Affine layer
     dnn_weight_arr = weight_init_std * np.random.randn(hidden_nodes, output_nodes)
     dnn_bias_arr = np.zeros(output_nodes)
     layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
     dnn.add_layer(layer_obj=layer_tmp)
 
+    # Softmax layer
     layer_tmp = softmax_layer()
     dnn.add_output_layer(layer_obj=layer_tmp)
     dnn.print_nn_layers()
@@ -56,14 +85,14 @@ if __name__=='__main__':
         train_data_batch = train_data[sample_indices]
         train_label_batch = train_label[sample_indices]
 
-        # print('start ', i, ' training iterations')
+        print('start ', i, ' training iterations')
         dnn.train(train_data_batch, train_label_batch)
         loss_val = dnn.loss(train_data_batch, train_label_batch)
         train_loss_list.append(loss_val)
 
         if i % iter_per_epoch == 0:
-            train_acc = dnn.accuracy(train_data, train_label)
-            test_acc = dnn.accuracy(test_data, test_label)
+            train_acc = dnn.accuracy(train_data, train_label, batch_size)
+            test_acc = dnn.accuracy(test_data, test_label, batch_size)
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
             print('finish epoch ', epochs_n)
@@ -85,6 +114,7 @@ if __name__=='__main__':
    # plt.ylim(0, 1.0)
     plt.legend(loc='lower right')
     plt.show()
+
     
 
 

@@ -5,6 +5,7 @@ import numpy as np
 from active_func import *
 from cost_func import *
 from common_func import *
+import pdb
 
 class ReLU_layer(object):
     def __init__(self):
@@ -53,6 +54,7 @@ class affine_layer(object):
         self.W = weight
         self.b = bias
         self.x = None
+        self.original_x_shape = None
         self.dW = None
         self.db = None
         self.name = 'affine_layer'
@@ -65,6 +67,8 @@ class affine_layer(object):
         print(self.name)
 
     def forward(self, x):
+        self.original_x_shape = x.shape
+        x = x.reshape(x.shape[0], -1)
         self.x = x
         out = np.dot(x, self.W) + self.b
         return out
@@ -73,6 +77,7 @@ class affine_layer(object):
         dx = np.dot(dout, self.W.T) 
         self.dW = np.dot(self.x.T, dout)
         self.db = np.sum(dout, axis=0)
+        dx = dx.reshape(*self.original_x_shape)
         return dx
 
 class softmax_layer(object):
@@ -127,7 +132,6 @@ class conv_layer(object):
 
         out = np.dot(col, col_W) + self.b
         out = out.reshape(in_num, out_height, out_weight, -1).transpose(0, 3, 1, 2)
-
         self.x = x
         self.col = col
         self.col_W = col_W
@@ -142,8 +146,8 @@ class conv_layer(object):
         self.dW = np.dot(self.col.T, dout)
         self.dW = self.dW.transpose(1, 0).reshape(filter_num, channels, filter_height, filter_weight)
 
-        dcol = np.dot(dout, self,col_W.T)
-        dx = col2im(dcol. self.x.shape, filter_height, filter_weight , self.stride, self.pad)
+        dcol = np.dot(dout, self.col_W.T)
+        dx = col2im(dcol, self.x.shape, filter_height, filter_weight , self.stride, self.pad)
 
         return dx
 
