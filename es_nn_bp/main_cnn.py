@@ -112,7 +112,7 @@ if __name__=='__main__':
     # x = np.arange(len(train_loss_list))
     x = np.arange(len(train_acc_list))
     # plt.plot(x, train_loss_list, label='train acc')
-    plt.title('cnn traning')
+    plt.title('cnn training')
     plt.plot(x, train_acc_list, label='train acc')
     plt.plot(x, test_acc_list, label='test acc', linestyle='--')
     # plt.xlabel("training_iters")

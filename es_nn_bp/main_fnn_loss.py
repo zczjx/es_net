@@ -78,14 +78,14 @@ if __name__=='__main__':
             epochs_n += 1
     
     # draw
-    x = np.arange(len(train_acc_list))
-    plt.title('fnn training')
-    plt.plot(x, train_acc_list, label='train acc')
-    plt.plot(x, test_acc_list, label='test acc', linestyle='--')
-    plt.xlabel("epochs")
-    plt.ylabel("accuracy")
-    plt.legend(loc='lower right')
+    x = np.arange(len(train_loss_list))
+    plt.plot(x, train_loss_list, label='train loss')
+    plt.title('fnn training loss')
+    plt.xlabel("iterations")
+    plt.ylabel("loss val")
+    plt.legend(loc='higher right')
     plt.show()
+
     
 
 
