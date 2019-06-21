@@ -39,6 +39,7 @@ if __name__=='__main__':
     dnn.print_nn_layers()
 
     train_data_num = train_data.shape[0]
+    test_data_num = test_data.shape[0]
     batch_size = 100
     iter_per_epoch = max(train_data_num / batch_size, 1)
     training_iters = 12001
@@ -62,8 +63,14 @@ if __name__=='__main__':
         train_loss_list.append(loss_val)
 
         if i % iter_per_epoch == 0:
-            train_acc = dnn.accuracy(train_data, train_label)
-            test_acc = dnn.accuracy(test_data, test_label)
+            sample_indices = np.random.choice(train_data_num, batch_size)
+            train_data_batch = train_data[sample_indices]
+            train_label_batch = train_label[sample_indices]
+            train_acc = dnn.accuracy(train_data_batch, train_label_batch, batch_size)
+            sample_indices = np.random.choice(test_data_num, batch_size)
+            test_data_batch = test_data[sample_indices]
+            test_label_batch = test_label[sample_indices]
+            test_acc = dnn.accuracy(test_data_batch, test_label_batch, batch_size)
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
             print('finish epoch ', epochs_n)
@@ -76,6 +83,7 @@ if __name__=='__main__':
     # x = np.arange(len(train_loss_list))
     x = np.arange(len(train_acc_list))
     # plt.plot(x, train_loss_list, label='train acc')
+    plt.title('fnn traning')
     plt.plot(x, train_acc_list, label='train acc')
     plt.plot(x, test_acc_list, label='test acc', linestyle='--')
     # plt.xlabel("training_iters")

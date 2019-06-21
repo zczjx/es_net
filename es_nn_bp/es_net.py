@@ -44,7 +44,7 @@ class es_net(object):
     
     def accuracy(self, input_val, test_label, batch_size=100):
         acc = 0.0
-
+        
         for i in range(int(input_val.shape[0] / batch_size)):
             x = input_val[i*batch_size:(i+1)*batch_size]
             t = test_label[i*batch_size:(i+1)*batch_size]

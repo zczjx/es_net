@@ -181,7 +181,7 @@ class pooling_layer(object):
 
         self.x = x
         self.arg_max =arg_max
-
+        
         return out
 
 
