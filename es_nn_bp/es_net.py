@@ -54,7 +54,7 @@ class es_net(object):
         
         return acc / input_val.shape[0]
             
-    def train(self, input_val, test_label, learning_rate=0.1):
+    def train(self, input_val, test_label):
         # forward
         loss_val = self.loss(input_val=input_val, test_label=test_label)
         #backward to calculate 
@@ -69,9 +69,9 @@ class es_net(object):
 
         # update param
         for layer_obj in self.layers:
-            dout = layer_obj.update_layer_nn_param(learning_rate)
+            dout = layer_obj.update_layer_nn_param()
 
-        self.output_layer.update_layer_nn_param(learning_rate)
+        self.output_layer.update_layer_nn_param()
 
 
 

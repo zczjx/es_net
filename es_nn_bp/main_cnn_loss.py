@@ -18,6 +18,7 @@ if __name__=='__main__':
     hidden_nodes = 100
     output_nodes = 10
     input_dim = (1, 28, 28)
+    update_class = Momentum
 
     # random init the dnn param
     dnn = es_net()
@@ -34,8 +35,9 @@ if __name__=='__main__':
     dnn_weight_arr = weight_init_std * \
                     np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
     dnn_bias_arr = np.zeros(filter_num)
-
-    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, filter_pad)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, \
+                    filter_pad, updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # ReLU layer
@@ -49,7 +51,9 @@ if __name__=='__main__':
     # Affine layer
     dnn_weight_arr = weight_init_std * np.random.randn(pool_output_size, hidden_nodes)
     dnn_bias_arr = np.zeros(hidden_nodes)
-    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
+                    updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # ReLU layer
@@ -59,7 +63,9 @@ if __name__=='__main__':
     # Affine layer
     dnn_weight_arr = weight_init_std * np.random.randn(hidden_nodes, output_nodes)
     dnn_bias_arr = np.zeros(output_nodes)
-    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
+                    updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # Softmax layer

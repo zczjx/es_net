@@ -18,6 +18,7 @@ if __name__=='__main__':
     hidden_nodes = 100
     output_nodes = 10
     input_dim = (1, 28, 28)
+    update_class = Momentum
 
     # random init the dnn param
     dnn = es_net()
@@ -31,16 +32,12 @@ if __name__=='__main__':
     input_size = input_dim[1]
     conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
     pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
-    print('conv_output_size: ', conv_output_size)
-    print('pool_output_size: ', pool_output_size)
     dnn_weight_arr = weight_init_std * \
                     np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
     dnn_bias_arr = np.zeros(filter_num)
-
-    print('Conv layer1 weight', dnn_weight_arr.shape)
-    print('Conv layer1 bias', dnn_bias_arr.shape)
-
-    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, filter_pad)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, \
+                    filter_pad, updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # ReLU layer
@@ -51,16 +48,13 @@ if __name__=='__main__':
     input_size = conv_output_size
     conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
     pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
-    print('conv_output_size: ', conv_output_size)
-    print('pool_output_size: ', pool_output_size)
+ 
     dnn_weight_arr = weight_init_std * \
                     np.random.randn(filter_num, filter_num, filter_size, filter_size)
     dnn_bias_arr = np.zeros(filter_num)
-
-    print('Conv layer2 weight', dnn_weight_arr.shape)
-    print('Conv layer2 bias', dnn_bias_arr.shape)
-
-    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, filter_pad)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = conv_layer(dnn_weight_arr, dnn_bias_arr, filter_stride, \
+                    filter_pad, updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # ReLU layer
@@ -76,9 +70,9 @@ if __name__=='__main__':
     # Affine layer
     dnn_weight_arr = weight_init_std * np.random.randn(pool_output_size, hidden_nodes)
     dnn_bias_arr = np.zeros(hidden_nodes)
-    print('Affine layer weight', dnn_weight_arr.shape)
-    print('Affine layer bias', dnn_bias_arr.shape)
-    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
+                    updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # ReLU layer
@@ -88,7 +82,9 @@ if __name__=='__main__':
     # Affine layer
     dnn_weight_arr = weight_init_std * np.random.randn(hidden_nodes, output_nodes)
     dnn_bias_arr = np.zeros(output_nodes)
-    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
+                    updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     # Softmax layer
@@ -136,19 +132,12 @@ if __name__=='__main__':
             epochs_n += 1
     
     # draw
-
-    # markers = {'train': 'o', 'test': 's'}
-    # x = np.arange(len(train_loss_list))
     x = np.arange(len(train_acc_list))
-    # plt.plot(x, train_loss_list, label='train acc')
     plt.title('deep cnn training')
     plt.plot(x, train_acc_list, label='train acc')
     plt.plot(x, test_acc_list, label='test acc', linestyle='--')
-    # plt.xlabel("training_iters")
-    # plt.ylabel("loss_val")
     plt.xlabel("epochs")
     plt.ylabel("accuracy")
-   # plt.ylim(0, 1.0)
     plt.legend(loc='lower right')
     plt.show()
 

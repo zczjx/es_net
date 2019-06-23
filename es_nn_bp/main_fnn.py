@@ -9,6 +9,7 @@ from active_func import *
 from common_func import *
 from es_net import *
 from es_nn_layer import *
+from es_nn_updater import *
 from mnist import load_mnist
 
 if __name__=='__main__':
@@ -17,13 +18,16 @@ if __name__=='__main__':
     image_size = 28 * 28
     hidden_nodes = 100
     output_nodes = 10
+    update_class = Momentum
 
     # random init the dnn param
     dnn = es_net()
 
     dnn_weight_arr = weight_init_std * np.random.randn(image_size, hidden_nodes)
     dnn_bias_arr = np.zeros(hidden_nodes)
-    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
+                    updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     layer_tmp = ReLU_layer()
@@ -31,7 +35,9 @@ if __name__=='__main__':
 
     dnn_weight_arr = weight_init_std * np.random.randn(hidden_nodes, output_nodes)
     dnn_bias_arr = np.zeros(output_nodes)
-    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr)
+    updater_obj = update_class(learning_rate=0.1)
+    layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
+                    updater=updater_obj)
     dnn.add_layer(layer_obj=layer_tmp)
 
     layer_tmp = softmax_layer()

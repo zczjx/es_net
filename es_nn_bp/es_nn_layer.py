@@ -5,18 +5,31 @@ import numpy as np
 from active_func import *
 from cost_func import *
 from common_func import *
+from es_nn_updater import *
 import pdb
 
-class ReLU_layer(object):
-    def __init__(self):
-        self.out_mask = None
-        self.name = 'ReLU_layer'
+class layer_base(object):
 
-    def update_layer_nn_param(self, learning_rate=0.1):
-        pass
+    def __init__(self):
+        self.name = 'layer_base'
 
     def print_layer_name(self):
         print(self.name)
+
+    def update_layer_nn_param(self):
+        pass
+    
+    def forward(self, x):
+        pass
+    
+    def backward(self, dout):
+        pass
+    
+
+class ReLU_layer(layer_base):
+    def __init__(self):
+        self.out_mask = None
+        self.name = 'ReLU_layer'
     
     def forward(self, x):
         self.out_mask = (x <= 0)
@@ -29,16 +42,10 @@ class ReLU_layer(object):
         dx = dout
         return dx
 
-class sigmoid_layer(object):
+class sigmoid_layer(layer_base):
     def __init__(self):
         self.out = None
         self.name = 'sigmoid_layer'
-
-    def update_layer_nn_param(self, learning_rate=0.1):
-        pass
-    
-    def print_layer_name(self):
-        print(self.name)
 
     def forward(self, x):
         out = sigmoid(x)
@@ -49,22 +56,19 @@ class sigmoid_layer(object):
         dx = dout * (1.0 - self.out) * self.out
         return dx
 
-class affine_layer(object):
-    def __init__(self, weight, bias):
+class affine_layer(layer_base):
+    def __init__(self, weight, bias, updater=Adam()):
         self.W = weight
         self.b = bias
         self.x = None
         self.original_x_shape = None
         self.dW = None
         self.db = None
+        self.updater = updater
         self.name = 'affine_layer'
     
-    def update_layer_nn_param(self, learning_rate=0.1):
-        self.W -= learning_rate * self.dW
-        self.b -= learning_rate * self.db
-
-    def print_layer_name(self):
-        print(self.name)
+    def update_layer_nn_param(self):
+        self.updater.update(self.W, self.b, self.dW, self.db)
 
     def forward(self, x):
         self.original_x_shape = x.shape
@@ -80,16 +84,11 @@ class affine_layer(object):
         dx = dx.reshape(*self.original_x_shape)
         return dx
 
-class softmax_layer(object):
+class softmax_layer(layer_base):
     def __init__(self):
         self.out = None
         self.name = 'softmax_layer'
 
-    def update_layer_nn_param(self, learning_rate=0.1):
-        pass
-
-    def print_layer_name(self):
-        print(self.name)
     
     def forward(self, x):
         self.out = softmax(x)
@@ -102,8 +101,8 @@ class softmax_layer(object):
         dx = dx / batch_size
         return dx
 
-class conv_layer(object):
-    def __init__(self, weight, bias, stride=1, pad=0):
+class conv_layer(layer_base):
+    def __init__(self, weight, bias, stride=1, pad=0, updater=Adam()):
         self.W = weight
         self.b = bias
         self.stride = stride
@@ -111,17 +110,13 @@ class conv_layer(object):
         self.name = 'conv_layer'
         self.col = None
         self.col_W = None
-
         self.dW = None
         self.db = None
+        self.updater = updater
 
-    def update_layer_nn_param(self, learning_rate=0.1):
-        self.W -= learning_rate * self.dW
-        self.b -= learning_rate * self.db
+    def update_layer_nn_param(self):
+        self.updater.update(self.W, self.b, self.dW, self.db)
 
-    def print_layer_name(self):
-        print(self.name)
-    
     def forward(self, x):
         filter_num, channels, filter_height, filter_weight = self.W.shape
         in_num, channels, in_height, in_weight = x.shape
@@ -151,7 +146,7 @@ class conv_layer(object):
 
         return dx
 
-class pooling_layer(object):
+class pooling_layer(layer_base):
     def __init__(self, pool_h, pool_w, stride=1, pad=0):
         self.name = 'pooling_layer'
         self.pool_h = pool_h
@@ -160,12 +155,6 @@ class pooling_layer(object):
         self.pad = pad
         self.x = None
         self.arg_max = None
-
-    def update_layer_nn_param(self, learning_rate=0.1):
-        pass
-
-    def print_layer_name(self):
-        print(self.name)
     
     def forward(self, x):
         num, channels, in_height, in_weight = x.shape
@@ -183,7 +172,6 @@ class pooling_layer(object):
         self.arg_max =arg_max
         
         return out
-
 
     def backward(self, dout):
         dout = dout.transpose(0, 2, 3, 1)
@@ -210,6 +198,3 @@ if __name__=='__main__':
     layer.print_layer_name()
     layer = softmax_layer()
     layer.print_layer_name()
-
-    
-
