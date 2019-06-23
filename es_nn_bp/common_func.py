@@ -113,6 +113,22 @@ def col2im(col, input_shape, filter_h, filter_w, stride=1, pad=0):
 
     return img[:, :, pad:H + pad, pad:W + pad]
 
+def weight_init_scale(input_size, active_func='relu'):
+
+    scale = 0.01
+    if str(active_func).lower() == 'relu':
+        print('using He init method')
+        scale = np.sqrt(2.0 / input_size)
+    
+    elif str(active_func).lower() == 'sigmoid':
+        print('using Xavier init method')
+        scale = np.sqrt(1.0 / input_size)
+    
+    else:
+        print('using Default init method')
+        
+    return scale
+
 
 
 if __name__=='__main__':

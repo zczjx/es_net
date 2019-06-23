@@ -14,7 +14,7 @@ from mnist import load_mnist
 
 if __name__=='__main__':
     (train_data, train_label), (test_data, test_label) = load_mnist()
-    weight_init_std=0.01
+    scale=0.01
     image_size = 28 * 28
     hidden_nodes = 100
     output_nodes = 10
@@ -23,7 +23,8 @@ if __name__=='__main__':
     # random init the dnn param
     dnn = es_net()
 
-    dnn_weight_arr = weight_init_std * np.random.randn(image_size, hidden_nodes)
+    scale = weight_init_scale(input_size=image_size, active_func='relu')
+    dnn_weight_arr = scale * np.random.randn(image_size, hidden_nodes)
     dnn_bias_arr = np.zeros(hidden_nodes)
     updater_obj = update_class(learning_rate=0.1)
     layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
@@ -33,7 +34,8 @@ if __name__=='__main__':
     layer_tmp = ReLU_layer()
     dnn.add_layer(layer_obj=layer_tmp)
 
-    dnn_weight_arr = weight_init_std * np.random.randn(hidden_nodes, output_nodes)
+    scale = weight_init_scale(input_size=hidden_nodes, active_func='relu')
+    dnn_weight_arr = scale * np.random.randn(hidden_nodes, output_nodes)
     dnn_bias_arr = np.zeros(output_nodes)
     updater_obj = update_class(learning_rate=0.1)
     layer_tmp = affine_layer(weight=dnn_weight_arr, bias=dnn_bias_arr, \
