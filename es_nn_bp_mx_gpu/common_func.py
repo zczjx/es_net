@@ -67,16 +67,20 @@ def im2col(indut_data, filter_h, filter_w, stride=1, pad=0):
     out_h = (H + 2*pad - filter_h)//stride + 1
     out_w = (W + 2*pad - filter_w)//stride + 1
 
-    img = nd.pad(indut_data, [(0,0), (0,0), (pad, pad), (pad, pad)], 'constant')
-    col = nd.zeros((N, C, filter_h, filter_w, out_h, out_w), ctx=ctx)
+    img = nd.pad(indut_data, mode='constant',
+                pad_width=(0, 0, 0, 0, pad, pad, pad, pad))
+    img_np = img.asnumpy()
+    col_np = np.zeros((N, C, filter_h, filter_w, out_h, out_w))
 
     for y in range(filter_h):
         y_max = y + stride*out_h
         for x in range(filter_w):
             x_max = x + stride*out_w
-            col[:, :, y, x, :, :] = img[:, :, y:y_max:stride, x:x_max:stride]
+            col_np[:, :, y, x, :, :] = img_np[:, :, y:y_max:stride, x:x_max:stride]
 
-    col = col.transpose(0, 4, 5, 1, 2, 3).reshape(N*out_h*out_w, -1)
+    col = nd.array(col_np, ctx=ctx)
+    col = col.transpose(axes=(0, 4, 5, 1, 2, 3)).reshape(N*out_h*out_w, -1)
+    
     return col
 
 def col2im(col, indut_shape, filter_h, filter_w, stride=1, pad=0):
@@ -98,14 +102,18 @@ def col2im(col, indut_shape, filter_h, filter_w, stride=1, pad=0):
     N, C, H, W = indut_shape
     out_h = (H + 2*pad - filter_h)//stride + 1
     out_w = (W + 2*pad - filter_w)//stride + 1
-    col = col.reshape(N, out_h, out_w, C, filter_h, filter_w).transpose(0, 3, 4, 5, 1, 2)
+    col = col.reshape(N, out_h, out_w, C, filter_h, filter_w).transpose(axes=(0, 3, 4, 5, 1, 2))
+    col_np = col.asnumpy()
 
-    img = nd.zeros((N, C, H + 2*pad + stride - 1, W + 2*pad + stride - 1), ctx=ctx)
+    # img = nd.zeros((N, C, H + 2*pad + stride - 1, W + 2*pad + stride - 1), ctx=ctx)
+    img_np = np.zeros((N, C, H + 2*pad + stride - 1, W + 2*pad + stride - 1))
     for y in range(filter_h):
         y_max = y + stride*out_h
         for x in range(filter_w):
             x_max = x + stride*out_w
-            img[:, :, y:y_max:stride, x:x_max:stride] += col[:, :, y, x, :, :]
+            img_np[:, :, y:y_max:stride, x:x_max:stride] += col_np[:, :, y, x, :, :]
+
+    img = nd.array(img_np, ctx=ctx)
 
     return img[:, :, pad:H + pad, pad:W + pad]
 

@@ -30,14 +30,16 @@ class ReLU_layer(layer_base):
         self.name = 'ReLU_layer'
     
     def forward(self, x):
-        self.out_mask = (x <= 0)
-        out = x.copy()
+        self.out_mask = (x.asnumpy() <= 0)
+        out = x.asnumpy()
         out[self.out_mask] = 0
-        return out
+
+        return nd.array(out, ctx=ctx)
 
     def backward(self, dout):
-        dout[self.out_mask] = 0
-        dx = dout
+        dout_np = dout.asnumpy()
+        dout_np[self.out_mask] = 0
+        dx = nd.array(dout_np, ctx=ctx)
         return dx
 
 class sigmoid_layer(layer_base):
@@ -127,7 +129,7 @@ class conv_layer(layer_base):
         col_W = self.W.reshape(filter_num, -1).T
 
         out = nd.dot(col, col_W) + self.b
-        out = out.reshape(in_num, out_height, out_weight, -1).transpose(0, 3, 1, 2)
+        out = out.reshape(in_num, out_height, out_weight, -1).transpose(axes=(0, 3, 1, 2))
         self.x = x
         self.col = col
         self.col_W = col_W
@@ -136,15 +138,14 @@ class conv_layer(layer_base):
 
     def backward(self, dout):
         filter_num, channels, filter_height, filter_weight = self.W.shape
-        dout = dout.transpose(0, 2, 3, 1).reshape(-1, filter_num)
+        dout = dout.transpose(axes=(0, 2, 3, 1)).reshape(-1, filter_num)
 
         self.db = nd.sum(dout, axis=0)
         self.dW = nd.dot(self.col.T, dout)
-        self.dW = self.dW.transpose(1, 0).reshape(filter_num, channels, filter_height, filter_weight)
-
+        self.dW = self.dW.transpose(axes=(1, 0)).reshape(filter_num, channels,
+                                                    filter_height, filter_weight)
         dcol = nd.dot(dout, self.col_W.T)
         dx = col2im(dcol, self.x.shape, filter_height, filter_weight , self.stride, self.pad)
-
         return dx
 
 class pooling_layer(layer_base):
@@ -165,20 +166,22 @@ class pooling_layer(layer_base):
         col = im2col(x, self.pool_h, self.pool_w, self.stride, self.pad)
         col = col.reshape(-1, self.pool_h * self.pool_w)
 
-        arg_max = nd.argmax(col, axis=1)
+        arg_max = nd.argmax(col, axis=1).astype('int32').asnumpy()
         out = nd.max(col, axis=1)
-        out = out.reshape(num, out_h, out_w, channels).transpose(0, 3, 1, 2)
+        out = out.reshape(num, out_h, out_w, channels).transpose(axes=(0, 3, 1, 2))
 
         self.x = x
-        self.arg_max =arg_max
+        self.arg_max = arg_max
         
         return out
 
     def backward(self, dout):
-        dout = dout.transpose(0, 2, 3, 1)
+        dout = dout.transpose(axes=(0, 2, 3, 1))
         pool_size = self.pool_h * self.pool_w
-        dmax = nd.zeros((dout.size, pool_size), ctx=ctx)
-        dmax[nd.arange(self.arg_max.size, ctx=ctx), self.arg_max.flatten()] = dout.flatten()
+        dmax_np = np.zeros((dout.size, pool_size))
+        # dmax = nd.zeros((dout.size, pool_size), ctx=ctx)
+        dmax_np[np.arange(self.arg_max.size), self.arg_max.flatten()] = dout.asnumpy().flatten()
+        dmax = nd.array(dmax_np, ctx=ctx)
         dmax = dmax.reshape(dout.shape + (pool_size,))
 
         dcol = dmax.reshape(dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1)
