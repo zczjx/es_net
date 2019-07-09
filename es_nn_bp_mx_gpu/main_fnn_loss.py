@@ -3,14 +3,13 @@
 
 import sys, os
 import pickle
+import numpy as np
 import matplotlib.pyplot as plt
 from active_func import *
 from common_func import *
-import numpy as np
 import random
 from es_net import *
 from es_nn_layer import *
-from es_nn_updater import *
 from mnist import load_mnist
 
 if __name__=='__main__':
@@ -72,7 +71,7 @@ if __name__=='__main__':
         # print('start ', i, ' training iterations')
         dnn.train(train_data_batch, train_label_batch)
         loss_val = dnn.loss(train_data_batch, train_label_batch)
-        train_loss_list.append(loss_val)
+        train_loss_list.append(loss_val.asnumpy())
 
         if i % iter_per_epoch == 0:
             sample_indices =np.random.choice(train_data_num, validate_batch_size)
@@ -90,14 +89,14 @@ if __name__=='__main__':
             epochs_n += 1
     
     # draw
-    x = nd.arange(len(train_acc_list), ctx=ctx)
-    plt.title('fnn training')
-    plt.plot(x.asnumpy(), train_acc_list, label='train acc')
-    plt.plot(x.asnumpy(), test_acc_list, label='test acc', linestyle='--')
-    plt.xlabel("epochs")
-    plt.ylabel("accuracy")
-    plt.legend(loc='lower right')
+    x = np.arange(len(train_loss_list))
+    plt.plot(x, train_loss_list, label='train loss')
+    plt.title('fnn training loss')
+    plt.xlabel("iterations")
+    plt.ylabel("loss val")
+    plt.legend(loc='higher right')
     plt.show()
+
     
 
 
