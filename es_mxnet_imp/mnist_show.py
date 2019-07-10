@@ -13,7 +13,7 @@ if __name__=='__main__':
         print("pls enter the images slice num exam: 0 7")
         raise SystemExit(1)
 
-    mnist_test = gdata.vision.FashionMNIST(train=False)
+    mnist_test = gdata.vision.MNIST(train=False)
     print('type(mnist_test)', type(mnist_test))
     print('len(mnist_test)', len(mnist_test))
     imgs, labels = mnist_test[int(sys.argv[1]) : int(sys.argv[2])]
