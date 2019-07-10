@@ -8,13 +8,6 @@ from mxnet.gluon import loss as gloss, nn
 from mxnet.gluon import data as gdata
 
 
-def img_show(img):
-    pil_img = Image.fromarray(np.uint8(img))
-    box = (100, 100, 400, 400)
-    region = pil_img.crop(box)
-    region.show()
-    pil_img.show()
-
 if __name__=='__main__':
     if len(sys.argv) < 3:
         print("pls enter the images slice num exam: 0 7")
@@ -29,8 +22,3 @@ if __name__=='__main__':
         plt.subplot(2, imgs_one_line, idx+1)
         plt.imshow(pil_img)
     plt.show()
-
-    # print('old shape: ', img.shape)  # (784,)
-    # img = img.reshape(28, 28).asnumpy()  # 把图像的形状变为原来的尺寸
-    # print('new shape: ', img.shape)  # (28, 28)
-    # img_show(img)
