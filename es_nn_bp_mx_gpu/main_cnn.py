@@ -103,7 +103,7 @@ if __name__=='__main__':
         train_data_batch = nd.array(train_data[sample_indices], ctx=ctx)
         train_label_batch = nd.array(train_label[sample_indices], ctx=ctx)
 
-        print('start ', i, ' training iterations')
+        # print('start ', i, ' training iterations')
         dnn.train(train_data_batch, train_label_batch)
         loss_val = dnn.loss(train_data_batch, train_label_batch)
         train_loss_list.append(loss_val.asnumpy())
