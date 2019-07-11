@@ -18,15 +18,15 @@ if __name__=='__main__':
     print('type(test_data_batched): ', type(test_data_batched))
 
     lenet = nn.Sequential()
-    lenet.add(nn.Conv2D(channels=6, kernel_size=5, activation='relu'),
+    lenet.add(nn.Conv2D(channels=6, kernel_size=5, activation='sigmoid'),
             nn.MaxPool2D(pool_size=2, strides=2),
-            nn.Conv2D(channels=16, kernel_size=5, activation='relu'),
+            nn.Conv2D(channels=16, kernel_size=5, activation='sigmoid'),
             nn.MaxPool2D(pool_size=2, strides=2),
-            nn.Dense(120, activation='relu'),
-            nn.Dense(84, activation='relu'),
+            nn.Dense(120, activation='sigmoid'),
+            nn.Dense(84, activation='sigmoid'),
             nn.Dense(10))
     lr = 0.1
-    num_epochs = 10
+    num_epochs = 50
     lenet.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(lenet.collect_params(), 'sgd', {'learning_rate': lr})
     do_train(net=lenet, 
