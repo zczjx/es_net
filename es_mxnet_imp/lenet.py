@@ -27,7 +27,7 @@ if __name__=='__main__':
             nn.Dense(120, activation='sigmoid'),
             nn.Dense(84, activation='sigmoid'),
             nn.Dense(10))
-    lr = 0.1
+    lr = 0.05
     num_epochs = 100
     lenet.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(lenet.collect_params(), 'sgd', {'learning_rate': lr})

@@ -35,7 +35,7 @@ if __name__=='__main__':
         X = layer(X)
         print(layer.name, 'output shape:\t', X.shape)
     '''
-    lr = 0.01
+    lr = 0.05
     num_epochs = 100
     alexnet.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(alexnet.collect_params(), 'sgd', {'learning_rate': lr})
