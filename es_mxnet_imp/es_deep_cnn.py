@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*- 
 
-import sys, os
 import matplotlib.pyplot as plt
 import mxnet as mx
 from mxnet import autograd, gluon, init, nd
 from mxnet.gluon import loss as gloss, nn
 from mxnet.gluon import data as gdata
 from common_mx import *
-import time
 
 
 if __name__=='__main__':
@@ -26,13 +24,17 @@ if __name__=='__main__':
             nn.Dense(100, activation='relu'),
             nn.Dense(10))
     lr = 0.1
-    num_epochs = 10
+    num_epochs = 100
     es_deep_cnn.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(es_deep_cnn.collect_params(), 'sgd', {'learning_rate': lr})
-    do_train(net=es_deep_cnn, 
-        train_iter=train_data_batched, test_iter=test_data_batched, 
-        batch_size=batch_size, trainer=trainer, 
-        num_epochs=num_epochs, ctx=ctx)
+    test_acc_list = do_train(net=es_deep_cnn, 
+                        train_iter=train_data_batched, test_iter=test_data_batched, 
+                        batch_size=batch_size, trainer=trainer, 
+                        num_epochs=num_epochs, ctx=ctx)
+
+    pkl_file = os.path.basename(__file__).split('.')[0] + '.pkl'
+    with open(pkl_file, 'wb') as pkl_f:
+        pickle.dump(test_acc_list, pkl_f)
 
 
     

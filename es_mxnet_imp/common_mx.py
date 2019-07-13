@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*- 
 
-import sys, os
 import matplotlib.pyplot as plt
 import mxnet as mx
 from mxnet import autograd, gluon, init, nd
 from mxnet.gluon import data as gdata, utils as gutils, loss as gloss, nn
-import time
+import os, time, sys, pickle
 
 def try_gpu():
     """If GPU is available, return mx.gpu(0); else return mx.cpu()."""
@@ -45,6 +44,7 @@ def do_train(net, train_iter, test_iter, batch_size, trainer, ctx,
               num_epochs):
     """Train and evaluate a model with CPU or GPU."""
     print('training on', ctx)
+    test_acc_list = []
     loss = gloss.SoftmaxCrossEntropyLoss()
     for epoch in range(num_epochs):
         train_l_sum, train_acc_sum, n, start = 0.0, 0.0, 0, time.time()
@@ -60,11 +60,14 @@ def do_train(net, train_iter, test_iter, batch_size, trainer, ctx,
             train_acc_sum += (y_hat.argmax(axis=1) == y).sum().asscalar()
             n += y.size
         test_acc = evaluate_accuracy(test_iter, net, ctx)
+        test_acc_list.append(test_acc)
         print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, '
               'time %.1f sec'
               % (epoch + 1, train_l_sum / n, train_acc_sum / n, test_acc,
                  time.time() - start))
 
+    return test_acc_list
+    
 def load_data_fashion_mnist(batch_size, resize=None, root=os.path.join(
         '~', '.mxnet', 'datasets', 'fashion-mnist')):
     """Download the fashion mnist dataset and then load into memory."""

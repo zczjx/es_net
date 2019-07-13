@@ -7,7 +7,6 @@ from mxnet import autograd, gluon, init, nd
 from mxnet.gluon import loss as gloss, nn
 from mxnet.gluon import data as gdata
 from common_mx import *
-import time
 
 if __name__=='__main__':
     batch_size=100
@@ -37,12 +36,15 @@ if __name__=='__main__':
         print(layer.name, 'output shape:\t', X.shape)
     '''
     lr = 0.01
-    num_epochs = 30
+    num_epochs = 100
     alexnet.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(alexnet.collect_params(), 'sgd', {'learning_rate': lr})
-    do_train(net=alexnet, 
-        train_iter=train_data_batched, test_iter=test_data_batched, 
-        batch_size=batch_size, trainer=trainer, 
-        num_epochs=num_epochs, ctx=ctx)
+    test_acc_list = do_train(net=alexnet, 
+                        train_iter=train_data_batched, test_iter=test_data_batched, 
+                        batch_size=batch_size, trainer=trainer, 
+                        num_epochs=num_epochs, ctx=ctx)
+    pkl_file = os.path.basename(__file__).split('.')[0] + '.pkl'
+    with open(pkl_file, 'wb') as pkl_f:
+        pickle.dump(test_acc_list, pkl_f)
 
     
