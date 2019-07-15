@@ -11,6 +11,10 @@ import os, time, sys, pickle
 
 
 if __name__=='__main__':
+    if len(sys.argv) < 2:
+        print("pls enter training epochs num")
+        raise SystemExit(1)
+
     batch_size=100
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
     print('len(train_data_batched): ', len(train_data_batched))
@@ -28,7 +32,7 @@ if __name__=='__main__':
             nn.Dense(84, activation='sigmoid'),
             nn.Dense(10))
     lr = 0.05
-    num_epochs = 100
+    num_epochs = int(sys.argv[1])
     lenet.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(lenet.collect_params(), 'sgd', {'learning_rate': lr})
     test_acc_list = do_train(net=lenet, 

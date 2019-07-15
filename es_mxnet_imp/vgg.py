@@ -30,6 +30,10 @@ def vgg(vgg_arch_tuple):
 
 
 if __name__=='__main__':
+    if len(sys.argv) < 2:
+        print("pls enter training epochs num")
+        raise SystemExit(1)
+
     batch_size=100
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
     vgg_11_arch_tuple = ((1, 16), (1, 32), (2, 64), (2, 128), (2, 128))
@@ -43,7 +47,7 @@ if __name__=='__main__':
         print(blk.name, 'output shape:\t', X.shape)
     '''
     lr = 0.05
-    num_epochs = 100
+    num_epochs = int(sys.argv[1])
     vgg_11.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(vgg_11.collect_params(), 'sgd', {'learning_rate': lr})
     test_acc_list = do_train(net=vgg_11, 

@@ -41,6 +41,10 @@ def resnet_block(num_channels, num_residuals, first_block=False):
 
        
 if __name__=='__main__':
+    if len(sys.argv) < 2:
+        print("pls enter training epochs num")
+        raise SystemExit(1)
+
     batch_size=100
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
     resnet = nn.Sequential()
@@ -65,7 +69,7 @@ if __name__=='__main__':
     
 
     lr = 0.05
-    num_epochs = 30
+    num_epochs = int(sys.argv[1])
     resnet.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(resnet.collect_params(), 'sgd', {'learning_rate': lr})
     test_acc_list = do_train(net=resnet, 
