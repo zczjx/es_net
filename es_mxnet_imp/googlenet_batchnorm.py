@@ -40,13 +40,16 @@ if __name__=='__main__':
     batch_size=100
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
     blk1 = nn.Sequential()
-    blk1.add(nn.Conv2D(channels=64, kernel_size=7, strides=2, padding=3, activation='relu'),
-            nn.MaxPool2D(pool_size=3, strides=2, padding=1))
+    blk1.add(nn.Conv2D(channels=64, kernel_size=7, strides=2, padding=3),
+        nn.BatchNorm(), nn.Activation('relu'),
+        nn.MaxPool2D(pool_size=3, strides=2, padding=1))
     
     blk2 = nn.Sequential()
-    blk2.add(nn.Conv2D(channels=64, kernel_size=1, activation='relu'),
-            nn.Conv2D(channels=192, kernel_size=3, padding=1, activation='relu'),
-            nn.MaxPool2D(pool_size=3, strides=2, padding=1))
+    blk2.add(nn.Conv2D(channels=64, kernel_size=1),
+        nn.BatchNorm(), nn.Activation('relu'),
+        nn.Conv2D(channels=192, kernel_size=3, padding=1),
+        nn.BatchNorm(), nn.Activation('relu'),
+        nn.MaxPool2D(pool_size=3, strides=2, padding=1))
 
     blk3 = nn.Sequential()
     blk3.add(inception(64, (96, 128), (16, 32), 32),
