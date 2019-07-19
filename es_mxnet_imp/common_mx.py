@@ -3,7 +3,7 @@
 
 import matplotlib.pyplot as plt
 import mxnet as mx
-from mxnet import autograd, gluon, init, nd, image
+from mxnet import contrib, autograd, gluon, init, nd, image
 from mxnet.gluon import data as gdata, utils as gutils, loss as gloss, nn
 import os, time, sys, pickle
 
@@ -140,3 +140,36 @@ def _download_pikachu(data_dir):
                'val.rec': 'd6c33f799b4d058e82f2cb5bd9a976f69d72d520'}
     for k, v in dataset.items():
         gutils.download(root_url + k, os.path.join(data_dir, k), sha1_hash=v)
+
+def bbox_to_rect(bbox, color):
+    """Convert bounding box to matplotlib format."""
+    return plt.Rectangle(xy=(bbox[0], bbox[1]), width=bbox[2]-bbox[0],
+                         height=bbox[3]-bbox[1], fill=False, edgecolor=color,
+                         linewidth=2)
+def _make_list(obj, default_values=None):
+    if obj is None:
+        obj = default_values
+    elif not isinstance(obj, (list, tuple)):
+        obj = [obj]
+    return obj
+
+def show_bboxes(axes, bboxes, labels=None, colors=None):
+    """Show bounding boxes."""
+    labels = _make_list(labels)
+    colors = _make_list(colors, ['blue', 'lime', 'r', 'm', 'cyan', 'k'])
+    for i, bbox in enumerate(bboxes):
+        color = colors[i % len(colors)]
+        rect = bbox_to_rect(bbox.asnumpy(), color)
+        axes.add_patch(rect)
+        if labels and len(labels) > i:
+            text_color = 'k' if color == 'w' else 'w'
+            axes.text(rect.xy[0], rect.xy[1], labels[i],
+                      va='center', ha='center', fontsize=9, color=text_color,
+                      bbox=dict(facecolor=color, lw=0))
+
+def display_anchors(fig, w, h, fmap_w, fmap_h, s):
+    fmap = nd.zeros((1, 10, fmap_w, fmap_h))  # 前两维的取值不影响输出结果
+    anchors = contrib.nd.MultiBoxPrior(fmap, sizes=s, ratios=[1, 2, 0.5])
+    bbox_scale = nd.array((w, h, w, h))
+    print('anchors[0].shape: ', anchors[0].shape)
+    show_bboxes(fig.axes, anchors[0] * bbox_scale)
