@@ -159,9 +159,17 @@ class obj_ssd(nn.HybridBlock):
 class_loss = gloss.SoftmaxCrossEntropyLoss()
 bbox_loss = gloss.L1Loss()
 
-def total_loss_func(class_preds, class_labels, bbox_preds, bbox_labels, bbox_masks):
+def focal_loss(gamma, x, label):
+    return -(label - x) ** gamma * x.log()
+
+def total_loss_func(class_preds, class_labels, 
+                bbox_preds, bbox_labels, bbox_masks,
+                sigma=10.0, gamma=5.0):
     class_loss_val = class_loss(class_preds, class_labels)
     bbox_loss_val = bbox_loss(bbox_preds * bbox_masks, bbox_labels * bbox_masks)
+    # class_loss_val = focal_loss(gamma, class_preds, class_labels)
+    # bbox_loss_val = nd.smooth_l1((bbox_preds * bbox_masks - bbox_labels * bbox_masks),
+    #                            scalar=sigma)
     return class_loss_val + bbox_loss_val
 
 def class_accuracy_eval(class_preds, class_labels):
@@ -191,6 +199,10 @@ def display(img, output, threshold):
 
 if __name__=='__main__':
 
+    if len(sys.argv) < 2:
+        print("pls enter the epochs exam: 20")
+        raise SystemExit(1)
+
     batch_size, edge_size = 16, 256
     train_iter, validate_iter = load_data_pikachu(batch_size, edge_size)
 
@@ -211,7 +223,7 @@ if __name__=='__main__':
                             {'learning_rate': 0.2, 'wd': 5e-4})
 
     # training
-    for epoch in range(20):
+    for epoch in range(int(sys.argv[1])):
         acc_sum, mae_sum, n, m = 0.0, 0.0, 0, 0
         train_iter.reset()  # 从头读取数据
         start = time.time()
