@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import mxnet as mx
 from mxnet import contrib, autograd, gluon, init, nd, image
 from mxnet.gluon import data as gdata, utils as gutils, loss as gloss, nn
-import os, time, sys, pickle
+import os, time, sys, pickle, tarfile, zipfile
+from mxnet.gluon import model_zoo
 
 def try_gpu():
     """If GPU is available, return mx.gpu(0); else return mx.cpu()."""
@@ -47,6 +48,35 @@ def do_train(net, train_iter, test_iter, batch_size, trainer, ctx,
     test_acc_list = []
     loss = gloss.SoftmaxCrossEntropyLoss()
     for epoch in range(num_epochs):
+        train_l_sum, train_acc_sum, n, start = 0.0, 0.0, 0, time.time()
+        for X, y in train_iter:
+            X, y = X.as_in_context(ctx), y.as_in_context(ctx)
+            with autograd.record():
+                y_hat = net(X)
+                l = loss(y_hat, y).sum()
+            l.backward()
+            trainer.step(batch_size)
+            y = y.astype('float32')
+            train_l_sum += l.asscalar()
+            train_acc_sum += (y_hat.argmax(axis=1) == y).sum().asscalar()
+            n += y.size
+        test_acc = evaluate_accuracy(test_iter, net, ctx)
+        test_acc_list.append(test_acc)
+        print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, '
+              'time %.1f sec'
+              % (epoch + 1, train_l_sum / n, train_acc_sum / n, test_acc,
+                 time.time() - start))
+
+    return test_acc_list
+
+def common_train(net, train_iter, test_iter, batch_size, trainer, num_epochs,
+                loss_func, ctx):
+    """Train and evaluate a model with CPU or GPU."""
+    print('training on', ctx)
+    test_acc_list = []
+    loss = loss_func
+    for epoch in range(num_epochs):
+        print('start epoch: %d' % (epoch + 1))
         train_l_sum, train_acc_sum, n, start = 0.0, 0.0, 0, time.time()
         for X, y in train_iter:
             X, y = X.as_in_context(ctx), y.as_in_context(ctx)
@@ -173,3 +203,69 @@ def display_anchors(fig, w, h, fmap_w, fmap_h, s):
     bbox_scale = nd.array((w, h, w, h))
     print('anchors[0].shape: ', anchors[0].shape)
     show_bboxes(fig.axes, anchors[0] * bbox_scale)
+
+def download_voc_pascal(data_dir='../data'):
+    """Download the Pascal VOC2012 Dataset."""
+    voc_dir = os.path.join(data_dir, 'VOCdevkit/VOC2012')
+    url = ('http://host.robots.ox.ac.uk/pascal/VOC/voc2012'
+           '/VOCtrainval_11-May-2012.tar')
+    sha1 = '4e443f8a2eca6b1dac8a6c57641b67dd40621a49'
+    fname = gutils.download(url, data_dir, sha1_hash=sha1)
+    with tarfile.open(fname, 'r') as f:
+        f.extractall(data_dir)
+    return voc_dir
+
+def read_voc_images(root, is_train=True, num=17125):
+    txt_fname = '%s/ImageSets/Segmentation/%s' % (
+        root, 'train.txt' if is_train else 'val.txt')
+    with open(txt_fname, 'r') as f:
+        images = f.read().split()
+    features, labels = [None] * len(images), [None] * len(images)
+    for i, fname in enumerate(images):
+        if i >= num:
+            break
+        features[i] = image.imread('%s/JPEGImages/%s.jpg' % (root, fname))
+        labels[i] = image.imread(
+            '%s/SegmentationClass/%s.png' % (root, fname))
+    return features, labels
+
+def voc_label_indices(colormap, colormap2label):
+    colormap = colormap.astype('int32')
+    idx = ((colormap[:, :, 0] * 256 + colormap[:, :, 1]) * 256
+           + colormap[:, :, 2])
+    return colormap2label[idx]
+
+def voc_rand_crop(img, label, height, width):
+    img, rect = image.random_crop(img, (width, height))
+    label = image.fixed_crop(label, *rect)
+    return img, label
+
+class VOCSegDataset(gdata.Dataset):
+    """The Pascal VOC2012 Dataset."""
+    def __init__(self, is_train, crop_size, voc_dir, colormap2label):
+        self.rgb_mean = nd.array([0.485, 0.456, 0.406])
+        self.rgb_std = nd.array([0.229, 0.224, 0.225])
+        self.crop_size = crop_size
+        data, labels = read_voc_images(root=voc_dir, is_train=is_train)
+        self.data = [self.normalize_image(im) for im in self.filter(data)]
+        self.labels = self.filter(labels)
+        self.colormap2label = colormap2label
+        print('read ' + str(len(self.data)) + ' examples')
+
+    def normalize_image(self, data):
+        # return (data.astype('float32') / 255 - self.rgb_mean) / self.rgb_std
+        return data.astype('float32') / 255
+
+    def filter(self, images):
+        return [im for im in images if (
+            im.shape[0] >= self.crop_size[0] and
+            im.shape[1] >= self.crop_size[1])]
+
+    def __getitem__(self, idx):
+        data, labels = voc_rand_crop(self.data[idx], self.labels[idx],
+                                     *self.crop_size)
+        return (data.transpose((2, 0, 1)),
+                voc_label_indices(labels, self.colormap2label))
+
+    def __len__(self):
+        return len(self.data)

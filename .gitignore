@@ -13,3 +13,5 @@
 *.pyc
 .vscode/
 *.pkl
+*.params
+*.json
