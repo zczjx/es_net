@@ -7,13 +7,6 @@ import matplotlib.axes as axes
 from mxnet.gluon import loss as gloss, nn, model_zoo
 from mxnet.gluon import data as gdata
 from common_mx import *
-from mxnet.contrib import onnx as onnx_mxnet
-import logging
-logging.basicConfig(level=logging.INFO)
-from onnx import checker
-import onnx
-
-
 
 if __name__=='__main__':
     prefix = 'demo_net'

@@ -2,11 +2,18 @@
 # -*- coding: utf-8 -*- 
 
 import matplotlib.pyplot as plt
+import numpy as np
 import mxnet as mx
 from mxnet import contrib, autograd, gluon, init, nd, image
 from mxnet.gluon import data as gdata, utils as gutils, loss as gloss, nn
 import os, time, sys, pickle, tarfile, zipfile
 from mxnet.gluon import model_zoo
+from mxnet.contrib import onnx as onnx_mxnet
+import logging
+# logging.basicConfig(level=logging.INFO)
+from onnx import checker
+import onnx
+
 
 def try_gpu():
     """If GPU is available, return mx.gpu(0); else return mx.cpu()."""
@@ -18,6 +25,7 @@ def try_gpu():
     return ctx
 
 ctx = try_gpu()
+# ctx = mx.cpu()
 
 def _get_batch(batch, ctx):
     """Return features and labels on ctx."""
