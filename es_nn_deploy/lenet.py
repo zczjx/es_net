@@ -46,14 +46,14 @@ if __name__=='__main__':
                             train_iter=train_data_batched, test_iter=test_data_batched, 
                             batch_size=batch_size, trainer=trainer, 
                             num_epochs=num_epochs, ctx=ctx)
-    
+
     lenet.export(prefix)
 
     # convert to onnx
     onnx_model_path = onnx_mxnet.export_model(syms, params, [input_shape], np.float32, onnx_file)
-                        
+
     # Load onnx model
     model_proto = onnx.load_model(onnx_model_path)
-                        
+
     # Check if converted ONNX protobuf is valid
     checker.check_graph(model_proto.graph)

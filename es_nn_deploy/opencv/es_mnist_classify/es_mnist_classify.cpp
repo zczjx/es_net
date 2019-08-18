@@ -16,10 +16,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/dnn/dnn.hpp>
 #include <opencv2/dnn/layer.hpp>
+#include <opencv2/dnn/all_layers.hpp>
 #include <opencv2/core/utility.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
-
 #include "es_cv_common.hpp"
 
 using namespace cv;
@@ -33,38 +33,42 @@ static vector<string> classes = {"t-shirt", "trouser", "pullover", "dress", "coa
 int main(int argc, char** argv)
 {
     list< pair<Mat, uint8_t> > test_dat;
-    int i, j, idx;
+    int err_cnt, total_cnt;
+    float acc_rate = 0.0;
+    Net demo_net;
 
-    if(argc < 3)
+    if(argc < 4)
     {
-        cout << "exam: ./es_demo_cv_detect test_datset test_labels" << endl;
+        cout << "exam: ./es_demo_cv_detect test_datset test_labels onnx_file" << endl;
         return -1;
     }
 
     test_dat = load_mnist_fmt_data(argv[1], argv[2]);
-    idx = atoi(argv[3]);
+    demo_net = readNetFromONNX(argv[3]);
+    err_cnt = 0;
+    total_cnt = 0;
 
-    j = 0;
     for(pair<Mat, uint8_t> pair_item : test_dat)
     {
-        if(j ==  idx)
-        {
-            Mat img = pair_item.first;
-            uint8_t label = pair_item.second;
+        Mat blob;
+        Mat out_vec;
+        int out_val;
+        int label = pair_item.second;
 
-            cout << "label: " << classes[label] << endl;
-            namedWindow("mnist_window", WINDOW_AUTOSIZE);
-            resizeWindow("mnist_window", 320, 240);
-            imshow("mnist_window", img);
-            waitKey(0);
-            break;
+        blob = blobFromImage(pair_item.first, 1, Size(28, 28), Scalar(),
+                    false, false, CV_8UC1);
 
-        }
-
-        j++;
-
+        demo_net.setInput(blob);
+        out_vec = demo_net.forward();
+        minMaxIdx(out_vec.reshape(0, 10), NULL, NULL, NULL, &out_val);
+        total_cnt++;
+        if(out_val != label)
+            err_cnt++;
     }
 
-
+    printf("total_cnt: %d, err_cnt: %d\n", total_cnt, err_cnt);
+    acc_rate = ((float) (total_cnt - err_cnt)) / (float) (total_cnt);
+    printf("test acc_rate: %f\n", acc_rate);
+    cout << "finish cnn test......" << endl;
     return 0;
 }

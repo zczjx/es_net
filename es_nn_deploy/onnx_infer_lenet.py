@@ -14,7 +14,7 @@ if __name__=='__main__':
         print("pls enter onnx model file path")
         raise SystemExit(1)
 
-    batch_size = 100
+    batch_size = 1000
     onnx_file  = sys.argv[1]
     input_shape = (batch_size, 1, 28, 28)
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
