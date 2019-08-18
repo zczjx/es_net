@@ -9,7 +9,7 @@ LDFLAGS := -lopencv_core -lopencv_imgcodecs -lopencv_videoio \
 			-lopencv_imgproc -lopencv_highgui -lopencv_objdetect \
 			-lpthread
 
-CFLAGS := -I/usr/local/include/opencv4 -std=c++11
+CFLAGS := -I/usr/local/include/opencv4 -I../include -std=c++11
 CXXFLAGS :=
 
 all: $(OBJS)
