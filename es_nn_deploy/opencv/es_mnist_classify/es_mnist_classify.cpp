@@ -22,6 +22,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include "es_cv_common.hpp"
 
+#define US_TO_SEC_UNIT (1000 * 1000)
+
 using namespace cv;
 using namespace dnn;
 using namespace std;
@@ -36,6 +38,8 @@ int main(int argc, char** argv)
     int err_cnt, total_cnt;
     float acc_rate = 0.0;
     Net demo_net;
+    time_t start_time, end_time;
+    double infer_sec = 0.0;
 
     if(argc < 4)
     {
@@ -47,7 +51,7 @@ int main(int argc, char** argv)
     demo_net = readNetFromONNX(argv[3]);
     err_cnt = 0;
     total_cnt = 0;
-
+    start_time = time(NULL);
     for(pair<Mat, uint8_t> pair_item : test_dat)
     {
         Mat blob;
@@ -66,7 +70,10 @@ int main(int argc, char** argv)
             err_cnt++;
     }
 
-    printf("total_cnt: %d, err_cnt: %d\n", total_cnt, err_cnt);
+    end_time = time(NULL);
+    infer_sec = difftime(end_time, start_time);
+    printf("total_cnt: %d, err_cnt: %d, inference time %f sec\n", 
+        total_cnt, err_cnt, infer_sec);
     acc_rate = ((float) (total_cnt - err_cnt)) / (float) (total_cnt);
     printf("test acc_rate: %f\n", acc_rate);
     cout << "finish cnn test......" << endl;
