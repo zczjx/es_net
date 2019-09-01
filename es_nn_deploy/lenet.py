@@ -15,7 +15,7 @@ if __name__=='__main__':
         print("pls enter training epochs num")
         raise SystemExit(1)
 
-    batch_size=100
+    batch_size = 100
     prefix = 'cnn_' + os.path.basename(__file__).split('.')[0]
     syms = prefix + '-symbol.json'
     params = prefix + '-0000.params'
@@ -30,12 +30,12 @@ if __name__=='__main__':
     print('filename: ', os.path.basename(__file__))
     
     lenet = nn.HybridSequential()
-    lenet.add(nn.Conv2D(channels=6, kernel_size=5, activation='sigmoid'),
+    lenet.add(nn.Conv2D(channels=6, kernel_size=5, activation='relu'),
             nn.MaxPool2D(pool_size=2, strides=2),
-            nn.Conv2D(channels=16, kernel_size=5, activation='sigmoid'),
+            nn.Conv2D(channels=16, kernel_size=5, activation='relu'),
             nn.MaxPool2D(pool_size=2, strides=2),
-            nn.Dense(120, activation='sigmoid'),
-            nn.Dense(84, activation='sigmoid'),
+            nn.Dense(120, activation='relu'),
+            nn.Dense(84, activation='relu'),
             nn.Dense(10))
     lr = 0.05
     num_epochs = int(sys.argv[1])
