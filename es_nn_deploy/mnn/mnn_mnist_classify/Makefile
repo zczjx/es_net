@@ -5,13 +5,11 @@ CXX ?= $(CROSS_COMPILE)g++
 LD ?= $(CROSS_COMPILE)ld
 OUT_BIN ?= mnn_mnist_classify
 dep_file = .$@.d
-LDFLAGS += -lpthread -lopencv_core -lopencv_imgcodecs -lopencv_videoio \
-		-lopencv_imgproc -lopencv_highgui -lopencv_objdetect -lopencv_dnn \
-		-lMNN
+LDFLAGS += -lpthread -lMNN
 
 STATIC_LDFLAGS = -L../lib
 
-CFLAGS := -I/usr/local/include/opencv4 -I../include -L../lib -std=c++11 \
+CFLAGS := -I../include -L../lib -std=c++11 \
 			-g -fPIC -rdynamic
 CXXFLAGS :=
 

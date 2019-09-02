@@ -9,12 +9,9 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include <list>
 #include <algorithm>
 #include <cstdio>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/utility.hpp>
 
 #include "Interpreter.hpp"
 #include "MNNDefine.h"
@@ -47,7 +44,7 @@ int main(int argc, char** argv)
 
     test_dat = load_mnist_fmt_data(argv[1], argv[2]);
     demo_net = Interpreter:: createFromFile(argv[3]);
-    sched_cfg.numThread = 1;
+    sched_cfg.numThread = 8;
     sched_cfg.type = MNNForwardType::MNN_FORWARD_CPU;
     backend_cfg.precision = BackendConfig::PrecisionMode::Precision_Low;
     backend_cfg.power = BackendConfig::PowerMode::Power_High;
@@ -70,59 +67,23 @@ int main(int argc, char** argv)
         halide_type_t btype;
 
         in_tensor = demo_net->getSessionInput(demo_net_session, "data");
-        in_tensor->setType(4);
         demo_net->resizeTensor(in_tensor, dims);
-        // demo_net->resizeTensor(out_tensor, dims);
-        // out_tensor->setType(1);
         demo_net->resizeSession(demo_net_session);
-        // btype = in_tensor->getType();
-
-        /************
-        printf("btype.code: %d\n", btype.code);
-        printf("btype.bits: %d\n", btype.bits);
-        printf("btype.lanes: %d\n", btype.lanes);
-        cout << "in_tensor->size(): " << in_tensor->size() << endl;
-        cout << "in_tensor->elementSize(): " << in_tensor->elementSize() << endl;
-
-      
-        cout << "in_tensor->size(): " << in_tensor->size() << endl;
-        cout << "in_tensor->getDimensionType(): " <<  (int) in_tensor->getDimensionType() << endl; 
-        cout << "nhwc_Tensor->getDimensionType(): " <<  (int) nhwc_Tensor->getDimensionType() << endl;
-        cout << "out_tensor->getDimensionType(): " <<  (int) out_tensor->getDimensionType() << endl;
-        cout << "out_tensor->size(): " << out_tensor->size() << endl;
-
-        ****/
-
-        /***
-        std::vector<int> shape = in_tensor->shape();
-        cout << "in_tensor->size(): " << in_tensor->size() << endl;
-        
-        for(int dim: shape)
-        {
-            cout << dim << " ";
-        }
-        cout << endl;
-        **/
-
         in_tensor->copyFromHostTensor(nhwc_Tensor);
-        // cout << "in_tensor->size(): " << in_tensor->size() << endl;
-        // cout << "in_tensor->elementSize(): " << in_tensor->elementSize() << endl;
         demo_net->runSession(demo_net_session);
         out_tensor = demo_net->getSessionOutput(demo_net_session, "dense2_fwd");
         vector<float> out_vec(out_tensor->elementSize());
         pout_data = out_tensor->host<float>();
-        
+
         for (int j = 0; j < out_tensor->elementSize(); j++)
         {
             out_vec[j] = pout_data[j];
         }
+
         vector<float>:: iterator max_iter = max_element(out_vec.begin(), 
                                                 out_vec.end());
         out_val = distance(out_vec.begin(), max_iter);
         total_cnt++;
-
-        // if(total_cnt == 10)
-        //    break;
 
         if(out_val != label)
             err_cnt++;

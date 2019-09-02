@@ -65,33 +65,25 @@ std:: list< std:: pair<MNN::Tensor*, uint8_t> > load_mnist_fmt_data(
 
     img_size = height * width;
     printf("img_size: %lu\n", img_size);
-
-    tmp_img = new uint8_t(img_size);
-    std::vector<int> dims{1, height, width, 1};
+    tmp_img = new uint8_t[img_size];
+    std::vector<int> dims{1, 1, height, width};
 
     for(i = 0; i < num_labels; i++)
     {
         uint8_t label;
         MNN::Tensor *tmp_tensor = NULL;
-        uint8_t *nhwc_data = NULL;
+        float *nhwc_data = NULL;
         int nhwc_size;
-        halide_type_t btype;
         
-        tmp_tensor = MNN::Tensor::create<uint8_t>(dims, NULL, MNN::Tensor::TENSORFLOW);
-        // cout << "nhwc_size: " << nhwc_size << endl;
-        nhwc_data   = tmp_tensor->host<uint8_t>();
-        ret = fread(nhwc_data, 1, img_size, file_dataset);
-        // img_process->convert(tmp_img, width, height, 0, tmp_tensor);
+        tmp_tensor = MNN::Tensor::create<float>(dims, NULL, MNN::Tensor::CAFFE);
+        nhwc_data = tmp_tensor->host<float>();
+        ret = fread(tmp_img, 1, img_size, file_dataset);
 
-    /*********
-        btype = tmp_tensor->getType();
-        printf("btype.code: %d\n", btype.code);
-        printf("btype.bits: %d\n", btype.bits);
-        printf("btype.lanes: %d\n", btype.lanes);
-    ***/
-        // cout << "tmp_tensor->size(): " << tmp_tensor->size() << endl;
-        // cout << "tmp_tensor->elementSize(): " << tmp_tensor->elementSize() << endl;
-        // img_process->convert(tmp_img, width, height, 0, tmp_tensor);
+        for (int j = 0; j < img_size; j++)
+        {
+            nhwc_data[j] = float(tmp_img[j]);
+        }
+   
         ret = fread(&label, 1, sizeof(label), file_labels);
         ret_list.push_back(std:: make_pair(tmp_tensor, label));
     }
