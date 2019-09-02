@@ -5,12 +5,9 @@
 
 #include <vector>
 #include <deque>
+#include <list>
 #include <iostream>
 #include <cstdio>
-
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/core/utility.hpp>
 
 #include "platform.h"
 #include "net.h"
@@ -23,7 +20,7 @@ std:: list< std:: pair<ncnn:: Mat, uint8_t> > load_mnist_fmt_data(
     std:: list< std:: pair<ncnn:: Mat, uint8_t> > ret_list;
     FILE *file_dataset;
     FILE *file_labels;
-    uint8_t bytes_buf[4];
+    uint8_t bytes_buf[4], *tmp_img = NULL;
     uint32_t dataset_magic = 0, labels_magic = 0;
     uint32_t num_dataset = 0, num_labels = 0;
     int height = 0, width = 0;
@@ -61,13 +58,14 @@ std:: list< std:: pair<ncnn:: Mat, uint8_t> > load_mnist_fmt_data(
     img_size = height * width;
     printf("img_size: %lu\n", img_size);
 
+    tmp_img = new uint8_t[img_size];
+
     for(i = 0; i < num_labels; i++)
     {
         uint8_t label;
-        cv:: Mat cv_img(height, width, CV_8UC1);
 
-        ret = fread(cv_img.data, 1, img_size, file_dataset);
-        ncnn:: Mat img = ncnn::Mat::from_pixels(cv_img.data, ncnn::Mat::PIXEL_GRAY,
+        ret = fread(tmp_img, 1, img_size, file_dataset);
+        ncnn:: Mat img = ncnn::Mat::from_pixels(tmp_img, ncnn::Mat::PIXEL_GRAY,
                                         width, height);
         ret = fread(&label, 1, sizeof(label), file_labels);
         ret_list.push_back(std:: make_pair(img, label));
@@ -75,7 +73,7 @@ std:: list< std:: pair<ncnn:: Mat, uint8_t> > load_mnist_fmt_data(
 
     fclose(file_dataset);
     fclose(file_labels);
-
+    delete [] tmp_img;
     std:: cout << "finish loading " << num_labels << " items"  << std:: endl;
     std:: cout << std:: endl;
 

@@ -9,13 +9,10 @@
 
 #include <vector>
 #include <deque>
+#include <list>
 #include <iostream>
 #include <algorithm>
 #include <cstdio>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/utility.hpp>
 
 #include "platform.h"
 #include "net.h"
