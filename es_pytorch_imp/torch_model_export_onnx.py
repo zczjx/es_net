@@ -11,11 +11,11 @@ import torchvision.models as models
 import torch.onnx
 from onnx import checker 
 import onnx
+import logging
 
 if __name__=='__main__':
+    logging.basicConfig(level=logging.DEBUG)
     prefix = 'torch_net'
-    syms = prefix + '-symbol.json'
-    params = prefix + '-0000.params'
     onnx_file  = prefix + '.onnx'
     dummy_input = torch.randn(1, 3, 224, 224, device='cuda')
     input_names = ['demo_in_data']
