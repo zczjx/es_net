@@ -11,25 +11,24 @@ class lenet(nn.Module):
     def __init__(self):
         super(lenet, self).__init__()
         self.conv = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5),
-            nn.BatchNorm2d(num_features=6),
             nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
-            nn.BatchNorm2d(num_features=16),
-            nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2))
-     
-        self.fc = nn.Sequential(
-            nn.Linear(in_features=16*4*4, out_features=120),
+            nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=16, out_channels=256, kernel_size=4),
             nn.ReLU(),
-            nn.Linear(in_features=120, out_features=84),
+            nn.Conv2d(in_channels=256, out_channels=120, kernel_size=1),
             nn.ReLU(),
-            nn.Linear(in_features=84, out_features=10))
+            nn.Conv2d(in_channels=120, out_channels=84, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=84, out_channels=10, kernel_size=1))
 
     def forward(self, img):
         feature = self.conv(img)
+        # print('feature.shape: ', feature.shape)
         # print('img.shape: ', img.shape)
         # print('feature.view(img.shape[0], -1).shape: ', feature.view(img.shape[0], -1).shape)
-        output = self.fc(feature.view(img.shape[0], -1))
-        return output
+        # output = self.fc(feature)
+        return torch.squeeze(feature)
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
@@ -52,6 +51,15 @@ if __name__=='__main__':
     print('filename: ', os.path.basename(__file__))
     
     app_net = lenet()
+
+    '''
+    app_net.eval()
+    X = torch.rand(batch_size, 1, 28, 28)
+    X = app_net(X)
+    print('output shape: ', X.shape)
+    exit(1)
+    '''
+
 
     lr = 0.001
     num_epochs = int(sys.argv[1])
