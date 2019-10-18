@@ -70,14 +70,14 @@ if __name__=='__main__':
             resnet_block(512, 2))
     resnet.add(nn.GlobalAvgPool2D(), nn.Dense(10))
 
-    '''
+    
     X = nd.random.uniform(shape=(100, 1, 28, 28))
     resnet.initialize()
     for blk in resnet:
         X = blk(X)
         print(blk.name, 'output shape:\t', X.shape)
     exit()
-    '''
+    
     
 
     lr = 0.1

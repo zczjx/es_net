@@ -77,3 +77,13 @@ def do_train(net, train_iter, test_iter, batch_size, optimizer, num_epochs, devi
               % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
 
     return test_acc_list
+
+class conv_fc_out(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=1):
+        super(conv_fc_out, self).__init__()
+        self.conv = nn.Sequential(nn.Conv2d(
+                        in_channels=in_channels, out_channels=out_channels,
+                        kernel_size=1))
+    def forward(self, x):
+        feature = self.conv(x)
+        return torch.squeeze(feature)
