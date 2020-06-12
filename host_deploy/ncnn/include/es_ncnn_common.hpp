@@ -14,7 +14,7 @@
 
 namespace es_ncnn {
 
-std:: list< std:: pair<ncnn:: Mat, uint8_t> > load_mnist_fmt_data(
+std::list<std::pair<ncnn::Mat, uint8_t>> load_mnist_fmt_data(
     const char *path_dataset, const char *path_labels)
 {
     std:: list< std:: pair<ncnn:: Mat, uint8_t> > ret_list;
@@ -38,7 +38,7 @@ std:: list< std:: pair<ncnn:: Mat, uint8_t> > load_mnist_fmt_data(
     ret = fread(&num_dataset, 1, 4, file_dataset);
     num_dataset = ntohl(num_dataset);
     printf("num_dataset: 0x%08x\n", num_dataset);
-   
+
     ret = fread(&height, 1, 4, file_dataset);
     height = ntohl(height);
     printf("height: 0x%08x\n", height);

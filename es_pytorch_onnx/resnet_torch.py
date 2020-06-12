@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 import torch
@@ -9,7 +9,7 @@ from common_torch import *
 import os, time, sys, pickle
 
 class residual(nn.Module):
-    
+
     def __init__(self, in_channels, out_channels, use_1x1conv=False, stride=1):
         super(residual, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, 
@@ -21,11 +21,10 @@ class residual(nn.Module):
                         kernel_size=1, stride=stride)
         else:
             self.conv3 = None
-        
         self.bn1 = nn.BatchNorm2d(num_features=out_channels)
         self.bn2 = nn.BatchNorm2d(num_features=out_channels)
-        
-   
+
+
     def forward(self, x):
         y = func.relu(self.bn1(self.conv1(x)))
         y = self.bn2(self.conv2(y))
@@ -41,7 +40,7 @@ def resnet_block(in_channels, out_channels, num_residuals, first_block=False):
         else:
             blk.append(residual(out_channels, out_channels))
     return nn.Sequential(*blk)
-    
+
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
@@ -55,14 +54,14 @@ if __name__=='__main__':
     dummy_input = torch.randn(batch_size, 1, 28, 28, requires_grad=True, device=device)
     input_names = ['demo_in_data']
     output_names = ['demo_out_data']
-    
+
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
     print('len(train_data_batched): ', len(train_data_batched))
     print('len(test_data_batched): ', len(test_data_batched))
     print('type(train_data_batched): ', type(train_data_batched))
     print('type(test_data_batched): ', type(test_data_batched))
     print('filename: ', os.path.basename(__file__))
-    
+
     app_net = nn.Sequential(
                 nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7,
                     stride=2, padding=3),
@@ -86,13 +85,13 @@ if __name__=='__main__':
     lr = 0.001
     num_epochs = int(sys.argv[1])
     optimizer  = torch.optim.Adam(app_net.parameters(), lr=lr)
-    test_acc_list = do_train(net=app_net, 
-                            train_iter=train_data_batched, test_iter=test_data_batched, 
-                            batch_size=batch_size, optimizer=optimizer, 
+    test_acc_list = do_train(net=app_net,
+                            train_iter=train_data_batched, test_iter=test_data_batched,
+                            batch_size=batch_size, optimizer=optimizer,
                             num_epochs=num_epochs, device=device)
     app_net.eval()
-    torch.onnx.export(app_net, dummy_input, onnx_file, 
-        input_names=input_names, output_names=output_names, 
+    torch.onnx.export(app_net, dummy_input, onnx_file,
+        input_names=input_names, output_names=output_names,
         verbose=False)
 
     # Load onnx model

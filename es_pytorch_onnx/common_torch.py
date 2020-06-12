@@ -3,6 +3,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.axes as axes
+from PIL import Image
 import os, time, sys, pickle, tarfile, zipfile
 import logging
 from onnx import checker
@@ -11,6 +13,9 @@ import torch
 from torch import nn
 import torchvision
 import torchvision.transforms as transforms
+from visdom import Visdom
+import seaborn
+seaborn.set()
 
 def try_gpu():
     if torch.cuda.is_available():
@@ -28,7 +33,7 @@ def load_data_fashion_mnist(batch_size, resize=None, root='~/Datasets/FashionMNI
     if resize:
         trans.append(torchvision.transforms.Resize(size=resize))
     trans.append(torchvision.transforms.ToTensor())
-    
+
     transform = torchvision.transforms.Compose(trans)
     mnist_train = torchvision.datasets.FashionMNIST(root=root, train=True, download=True, transform=transform)
     mnist_test = torchvision.datasets.FashionMNIST(root=root, train=False, download=True, transform=transform)
@@ -38,6 +43,44 @@ def load_data_fashion_mnist(batch_size, resize=None, root='~/Datasets/FashionMNI
         num_workers = 4
     train_iter = torch.utils.data.DataLoader(mnist_train, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     test_iter = torch.utils.data.DataLoader(mnist_test, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    return train_iter, test_iter
+
+def load_data_cifar10(batch_size, resize=None, root='~/Datasets/CIFAR10'):
+    """Download the cifar-10 dataset and then load into memory."""
+    trans = []
+    if resize:
+        trans.append(torchvision.transforms.Resize(size=resize))
+    trans.append(torchvision.transforms.ToTensor())
+
+    transform = torchvision.transforms.Compose(trans)
+    cifar10_train = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform)
+    cifar10_test = torchvision.datasets.CIFAR10(root=root, train=False, download=True, transform=transform)
+    if sys.platform.startswith('win'):
+        num_workers = 0  # 0表示不用额外的进程来加速读取数据
+    else:
+        num_workers = 4
+    train_iter = torch.utils.data.DataLoader(cifar10_train, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    test_iter = torch.utils.data.DataLoader(cifar10_test, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    return train_iter, test_iter
+
+def load_data_cifar100(batch_size, resize=None, root='~/Datasets/CIFAR100'):
+    """Download the cifar-100 dataset and then load into memory."""
+    trans = []
+    if resize:
+        trans.append(torchvision.transforms.Resize(size=resize))
+    trans.append(torchvision.transforms.ToTensor())
+
+    transform = torchvision.transforms.Compose(trans)
+    cifar100_train = torchvision.datasets.CIFAR100(root=root, train=True, download=True, transform=transform)
+    cifar100_test = torchvision.datasets.CIFAR100(root=root, train=False, download=True, transform=transform)
+    if sys.platform.startswith('win'):
+        num_workers = 0  # 0表示不用额外的进程来加速读取数据
+    else:
+        num_workers = 4
+    train_iter = torch.utils.data.DataLoader(cifar100_train, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    test_iter = torch.utils.data.DataLoader(cifar100_test, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
     return train_iter, test_iter
 
@@ -87,3 +130,7 @@ class conv_fc_out(nn.Module):
     def forward(self, x):
         feature = self.conv(x)
         return torch.squeeze(feature)
+
+def visom_show(plt=None):
+    viz = Visdom(env='main')
+    viz.matplot(plt)

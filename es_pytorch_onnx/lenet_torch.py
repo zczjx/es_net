@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 import torch
@@ -42,14 +42,14 @@ if __name__=='__main__':
     dummy_input = torch.randn(batch_size, 1, 28, 28, requires_grad=True, device=device)
     input_names = ['demo_in_data']
     output_names = ['demo_out_data']
-    
+
     train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
     print('len(train_data_batched): ', len(train_data_batched))
     print('len(test_data_batched): ', len(test_data_batched))
     print('type(train_data_batched): ', type(train_data_batched))
     print('type(test_data_batched): ', type(test_data_batched))
     print('filename: ', os.path.basename(__file__))
-    
+
     app_net = lenet()
 
     '''
@@ -64,13 +64,13 @@ if __name__=='__main__':
     lr = 0.001
     num_epochs = int(sys.argv[1])
     optimizer  = torch.optim.Adam(app_net.parameters(), lr=lr)
-    test_acc_list = do_train(net=app_net, 
-                            train_iter=train_data_batched, test_iter=test_data_batched, 
-                            batch_size=batch_size, optimizer=optimizer, 
+    test_acc_list = do_train(net=app_net,
+                            train_iter=train_data_batched, test_iter=test_data_batched,
+                            batch_size=batch_size, optimizer=optimizer,
                             num_epochs=num_epochs, device=device)
     app_net.eval()
-    torch.onnx.export(app_net, dummy_input, onnx_file, 
-        input_names=input_names, output_names=output_names, 
+    torch.onnx.export(app_net, dummy_input, onnx_file,
+        input_names=input_names, output_names=output_names,
         verbose=False)
 
     # Load onnx model

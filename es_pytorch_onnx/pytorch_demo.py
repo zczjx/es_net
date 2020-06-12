@@ -21,5 +21,3 @@ if __name__=='__main__':
 
     z = y.to('cpu').numpy()
     print(z)
-    
-   

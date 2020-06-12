@@ -15,7 +15,7 @@
 
 using namespace std;
 namespace es_mnn {
-std:: list< std:: pair<MNN::Tensor*, uint8_t> > load_mnist_fmt_data(
+std::list<std::pair<MNN::Tensor*, uint8_t>> load_mnist_fmt_data(
     const char *path_dataset, const char *path_labels)
 {
     std:: list< std:: pair<MNN::Tensor*, uint8_t> > ret_list;
@@ -46,7 +46,7 @@ std:: list< std:: pair<MNN::Tensor*, uint8_t> > load_mnist_fmt_data(
     ret = fread(&num_dataset, 1, 4, file_dataset);
     num_dataset = ntohl(num_dataset);
     printf("num_dataset: 0x%08x\n", num_dataset);
-   
+
     ret = fread(&height, 1, 4, file_dataset);
     height = ntohl(height);
     printf("height: 0x%08x\n", height);
@@ -74,7 +74,7 @@ std:: list< std:: pair<MNN::Tensor*, uint8_t> > load_mnist_fmt_data(
         MNN::Tensor *tmp_tensor = NULL;
         float *nhwc_data = NULL;
         int nhwc_size;
-        
+
         tmp_tensor = MNN::Tensor::create<float>(dims, NULL, MNN::Tensor::CAFFE);
         nhwc_data = tmp_tensor->host<float>();
         ret = fread(tmp_img, 1, img_size, file_dataset);
@@ -83,9 +83,9 @@ std:: list< std:: pair<MNN::Tensor*, uint8_t> > load_mnist_fmt_data(
         {
             nhwc_data[j] = float(tmp_img[j]);
         }
-   
+
         ret = fread(&label, 1, sizeof(label), file_labels);
-        ret_list.push_back(std:: make_pair(tmp_tensor, label));
+        ret_list.push_back(std::make_pair(tmp_tensor, label));
     }
 
     fclose(file_dataset);

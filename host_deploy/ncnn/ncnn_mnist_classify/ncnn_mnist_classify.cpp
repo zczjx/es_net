@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     test_dat = load_mnist_fmt_data(argv[1], argv[2]);
     demo_net.load_param(argv[4]);
     demo_net.load_model(argv[3]);
-    
+
     err_cnt = 0;
     total_cnt = 0;
     start_time = time(NULL);
