@@ -106,6 +106,14 @@ def do_train(net, train_iter, test_iter, batch_size, optimizer, num_epochs, devi
             X = X.to(device)
             y = y.to(device)
             y_hat = net(X)
+            '''
+            print('len(y): ', len(y))
+            print('len(y_hat): ', len(y_hat))
+            print('y.size(): ', y.size())
+            print('y_hat.size(): ', y_hat.size())
+            print('type(y): ', type(y))
+            print('type(y_hat): ', type(y_hat))
+            '''
             l = loss(y_hat, y)
             optimizer.zero_grad()
             l.backward()

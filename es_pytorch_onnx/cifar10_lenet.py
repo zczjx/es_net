@@ -14,21 +14,26 @@ class_name = ('plane', 'car', 'bird', 'cat',
 class lenet(nn.Module):
     def __init__(self):
         super(lenet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.conv = nn.Sequential(nn.Conv2d(in_channels=3, out_channels=6, kernel_size=5),
+            nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.ReLU(), nn.MaxPool2d(kernel_size=3, stride=3),
+            nn.Conv2d(in_channels=16, out_channels=400, kernel_size=1),
+            nn.ReLU(), nn.MaxPool2d(kernel_size=3, stride=3),
+            nn.Conv2d(in_channels=400, out_channels=120, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=120, out_channels=84, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=84, out_channels=10, kernel_size=1))
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+    def forward(self, img):
+        feature = self.conv(img)
+        # print('feature.shape: ', feature.shape)
+        # print('img.shape: ', img.shape)
+        # print('feature.view(img.shape[0], -1).shape: ', feature.view(img.shape[0], -1).shape)
+        # output = self.fc(feature)
+        # feature = feature.view(feature.shape[0], -1)
+        return torch.squeeze(feature)
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
