@@ -16,7 +16,7 @@ if __name__=='__main__':
     y = torch.tensor([4, 2, 3, 1], device=device)
     print(y)
     print('y.dtype: ', y.dtype)
-    print('y.shape: ', y.shape)
+    print('y.size: ', y.size())
     print('y.requires_grad: ', y.requires_grad)
 
     z = y.to('cpu').numpy()

@@ -1,34 +1,34 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
+import torch.nn.functional as F
 from common_torch import *
 import os, time, sys, pickle
+
+class_name = ('plane', 'car', 'bird', 'cat',
+              'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 class lenet(nn.Module):
     def __init__(self):
         super(lenet, self).__init__()
-        self.conv = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5),
-            nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
-            nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=16, out_channels=256, kernel_size=4),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=256, out_channels=120, kernel_size=1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=120, out_channels=84, kernel_size=1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=84, out_channels=10, kernel_size=1))
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
-    def forward(self, img):
-        feature = self.conv(img)
-        # print('feature.shape: ', feature.shape)
-        # print('img.shape: ', img.shape)
-        # print('feature.view(img.shape[0], -1).shape: ', feature.view(img.shape[0], -1).shape)
-        # output = self.fc(feature)
-        return torch.reshape(feature, (feature.shape[0], -1))
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
@@ -38,12 +38,12 @@ if __name__=='__main__':
     batch_size = 100
     prefix = 'cnn_' + os.path.basename(__file__).split('.')[0]
     onnx_file  = prefix + '.onnx'
-    input_shape = (batch_size, 1, 28, 28)
-    dummy_input = torch.randn(batch_size, 1, 28, 28, requires_grad=True, device=device)
+    input_shape = (batch_size, 3, 32, 32)
+    dummy_input = torch.randn(batch_size, 3, 32, 32, requires_grad=True, device=device)
     input_names = ['demo_in_data']
     output_names = ['demo_out_data']
 
-    train_data_batched, test_data_batched = load_data_fashion_mnist(batch_size=batch_size)
+    train_data_batched, test_data_batched = load_data_cifar10(batch_size=batch_size)
     print('len(train_data_batched): ', len(train_data_batched))
     print('len(test_data_batched): ', len(test_data_batched))
     print('type(train_data_batched): ', type(train_data_batched))
@@ -69,6 +69,7 @@ if __name__=='__main__':
                             batch_size=batch_size, optimizer=optimizer,
                             num_epochs=num_epochs, device=device)
     app_net.eval()
+
     torch.onnx.export(app_net, dummy_input, onnx_file,
         input_names=input_names, output_names=output_names,
         verbose=False)
