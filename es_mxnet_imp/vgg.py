@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 import mxnet as mx
@@ -21,7 +21,7 @@ def vgg(vgg_arch_tuple):
 
     for num_convs, num_channels in vgg_arch_tuple:
         net.add(vgg_block(num_convs, num_channels))
-    
+
     net.add(nn.Dense(4096, activation='relu'), nn.Dropout(0.5),
             nn.Dense(4096, activation='relu'), nn.Dropout(0.5),
             nn.Dense(10))
@@ -50,13 +50,11 @@ if __name__=='__main__':
     num_epochs = int(sys.argv[1])
     vgg_11.initialize(force_reinit=True, init=init.Xavier(), ctx=ctx)
     trainer = gluon.Trainer(vgg_11.collect_params(), 'sgd', {'learning_rate': lr})
-    test_acc_list = do_train(net=vgg_11, 
-                        train_iter=train_data_batched, test_iter=test_data_batched, 
-                        batch_size=batch_size, trainer=trainer, 
+    test_acc_list = do_train(net=vgg_11,
+                        train_iter=train_data_batched, test_iter=test_data_batched,
+                        batch_size=batch_size, trainer=trainer,
                         num_epochs=num_epochs, ctx=ctx)
     pkl_file = os.path.basename(__file__).split('.')[0] + '.pkl'
     with open(pkl_file, 'wb') as pkl_f:
         pickle.dump(test_acc_list, pkl_f)
-    
 
-    

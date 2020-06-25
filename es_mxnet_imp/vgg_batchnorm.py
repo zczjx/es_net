@@ -21,7 +21,7 @@ def vgg(vgg_arch_tuple):
 
     for num_convs, num_channels in vgg_arch_tuple:
         net.add(vgg_block(num_convs, num_channels))
-    
+
     net.add(nn.Dense(4096), nn.Dropout(0.5),
             nn.BatchNorm(), nn.Activation('relu'),
             nn.Dense(4096), nn.Dropout(0.5),
