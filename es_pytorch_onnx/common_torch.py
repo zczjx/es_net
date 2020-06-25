@@ -13,6 +13,7 @@ import torch
 from torch import nn
 import torchvision
 import torchvision.transforms as transforms
+from torch.utils.tensorboard import SummaryWriter
 from visdom import Visdom
 import seaborn
 seaborn.set()

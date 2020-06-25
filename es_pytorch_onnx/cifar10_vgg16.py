@@ -66,6 +66,7 @@ if __name__=='__main__':
         print("pls enter training epochs num")
         raise SystemExit(1)
 
+    tboard_writer = SummaryWriter('runs/cifar10_vgg16')
     batch_size = 100
     prefix = 'cnn_' + os.path.basename(__file__).split('.')[0]
     onnx_file  = prefix + '.onnx'
@@ -100,6 +101,9 @@ if __name__=='__main__':
                             batch_size=batch_size, optimizer=optimizer,
                             num_epochs=num_epochs, device=device)
     vgg16.eval()
+    images, labels = iter(test_data_batched).next()
+    tboard_writer.add_graph(vgg16, images.to(device=device))
+    tboard_writer.close()
 
     torch.onnx.export(vgg16, dummy_input, onnx_file,
         input_names=input_names, output_names=output_names,

@@ -7,7 +7,6 @@ from torch import nn, optim
 import torch.nn.functional as F
 from common_torch import *
 import os, time, sys, pickle
-from torch.utils.tensorboard import SummaryWriter
 
 class_name = ('plane', 'car', 'bird', 'cat',
               'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
