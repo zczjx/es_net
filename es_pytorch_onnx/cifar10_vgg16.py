@@ -99,7 +99,7 @@ if __name__=='__main__':
     test_acc_list = do_train(net=vgg16,
                             train_iter=train_data_batched, test_iter=test_data_batched,
                             batch_size=batch_size, optimizer=optimizer,
-                            num_epochs=num_epochs, device=device)
+                            num_epochs=num_epochs, device=device, tboard_writer=tboard_writer)
     vgg16.eval()
     images, labels = iter(test_data_batched).next()
     tboard_writer.add_graph(vgg16, images.to(device=device))

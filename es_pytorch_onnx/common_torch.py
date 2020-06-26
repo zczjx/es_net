@@ -11,6 +11,7 @@ from onnx import checker
 import onnx
 import torch
 from torch import nn
+import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
@@ -95,7 +96,7 @@ def evaluate_accuracy(data_iter, net, device):
             n += y.shape[0]
     return acc_sum / n
 
-def do_train(net, train_iter, test_iter, batch_size, optimizer, num_epochs, device):
+def do_train(net, train_iter, test_iter, batch_size, optimizer, num_epochs, device, tboard_writer=None):
     net = net.to(device)
     print("training on ", device)
     loss = torch.nn.CrossEntropyLoss()
@@ -125,6 +126,10 @@ def do_train(net, train_iter, test_iter, batch_size, optimizer, num_epochs, devi
             batch_count += 1
         test_acc = evaluate_accuracy(test_iter, net, device=device)
         test_acc_list.append(test_acc)
+
+        if tboard_writer != None:
+            tboard_writer.add_scalar('training loss', train_l_sum / batch_count, epoch)
+
         print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
               % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
 
@@ -139,6 +144,14 @@ class conv_fc_out(nn.Module):
     def forward(self, x):
         feature = self.conv(x)
         return torch.squeeze(feature)
+
+class GlobalAvgPool2d(nn.Module):
+    #
+    def __init__(self):
+        super(GlobalAvgPool2d, self).__init__()
+    def forward(self, x):
+        # print('GlobalAvgPool2d, x.size()[2:]: ', x.size()[2:])
+        return F.avg_pool2d(x, kernel_size=x.size()[2:])
 
 def visom_show(plt=None):
     viz = Visdom(env='main')

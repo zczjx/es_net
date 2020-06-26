@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 import mxnet as mx
@@ -9,7 +9,7 @@ from mxnet.gluon import data as gdata
 from common_mx import *
 
 class residual(nn.Block):
-    
+
     def __init__(self, num_channels, use_1x1conv=False, strides=1,**kwargs):
         super(residual, self).__init__(**kwargs)
         self.conv1 = nn.Conv2D(num_channels, kernel_size=3, padding=1,
@@ -19,10 +19,10 @@ class residual(nn.Block):
             self.conv3 = nn.Conv2D(num_channels, kernel_size=1, strides=strides)
         else:
             self.conv3 = None
-        
+
         self.bn1 = nn.BatchNorm()
         self.bn2 = nn.BatchNorm()
-        
+
     def forward(self, x):
         y = nd.relu(self.bn1(self.conv1(x)))
         y = self.bn2(self.conv2(y))
@@ -39,7 +39,7 @@ def resnet_block(num_channels, num_residuals, first_block=False):
             blk.add(residual(num_channels))
     return blk
 
-       
+
 if __name__=='__main__':
     if len(sys.argv) < 2:
         print("pls enter training epochs num")
@@ -51,7 +51,7 @@ if __name__=='__main__':
     resnet.add(nn.Conv2D(64, kernel_size=7, strides=2, padding=3),
                 nn.BatchNorm(), nn.Activation('relu'),
                 nn.MaxPool2D(pool_size=3, strides=2, padding=1))
-    
+
     resnet.add(resnet_block(64, 2, first_block=True),
             resnet_block(128, 2),
             resnet_block(256, 2),
@@ -66,7 +66,7 @@ if __name__=='__main__':
         print(blk.name, 'output shape:\t', X.shape)
     exit()
     '''
-    
+
 
     lr = 0.05
     num_epochs = int(sys.argv[1])
@@ -79,4 +79,3 @@ if __name__=='__main__':
     pkl_file = os.path.basename(__file__).split('.')[0] + '.pkl'
     with open(pkl_file, 'wb') as pkl_f:
         pickle.dump(test_acc_list, pkl_f)
-    
