@@ -16,8 +16,8 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 from visdom import Visdom
-import seaborn
-seaborn.set()
+# import seaborn
+# seaborn.set()
 
 def try_gpu():
     if torch.cuda.is_available():
@@ -85,6 +85,29 @@ def load_data_cifar100(batch_size, resize=None, root='~/Datasets/CIFAR100'):
     test_iter = torch.utils.data.DataLoader(cifar100_test, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
     return train_iter, test_iter
+
+def load_data_vocdetection(resize=None, root='~/Datasets/VOCDetection', image_set='train', year='2012'):
+    """Download the VOC Detection dataset and then load into memory."""
+    trans = []
+    if resize:
+        trans.append(torchvision.transforms.Resize(size=resize))
+    trans.append(torchvision.transforms.ToTensor())
+
+    transform = torchvision.transforms.Compose(trans)
+    voc_train = torchvision.datasets.VOCDetection(root, year=year,
+                                                image_set=image_set,
+                                                download=False,
+                                                transform=transform)
+    print('len(voc_train): ', len(voc_train))
+    print('type(voc_train): ', type(voc_train))
+
+    if sys.platform.startswith('win'):
+        num_workers = 0  # 0表示不用额外的进程来加速读取数据
+    else:
+        num_workers = 4
+    train_iter = torch.utils.data.DataLoader(voc_train, shuffle=True, num_workers=num_workers)
+
+    return train_iter
 
 def evaluate_accuracy(data_iter, net, device):
     acc_sum, n = 0.0, 0
