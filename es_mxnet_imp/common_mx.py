@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
 import mxnet as mx
@@ -97,7 +97,7 @@ def common_train(net, train_iter, test_iter, batch_size, trainer, num_epochs,
                  time.time() - start))
 
     return test_acc_list
-    
+
 def load_data_fashion_mnist(batch_size, resize=None, root=os.path.join(
         '~', '.mxnet', 'datasets', 'fashion-mnist')):
     """Download the fashion mnist dataset and then load into memory."""

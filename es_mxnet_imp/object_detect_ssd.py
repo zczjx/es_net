@@ -26,7 +26,7 @@ def down_sample_blk(num_chs):
         blk.add(nn.Conv2D(num_chs, kernel_size=3, padding=1),
                 nn.BatchNorm(in_channels=num_chs),
                 nn.Activation('relu'))
-    
+
     blk.add(nn.MaxPool2D(2))
     return blk
 
@@ -114,7 +114,7 @@ class obj_ssd(nn.HybridBlock):
                                             param_filename, ctx=ctx)
             net(fmap)
             setattr(self, 'bbox_pred_func_%d' % i, net)
-    
+
     def forward(self, X):
         anchors, class_preds, bbox_preds = [None] * 5, [None] * 5, [None] * 5
         for i in range(5):
@@ -122,11 +122,11 @@ class obj_ssd(nn.HybridBlock):
                 getattr(self, 'blk_%d' % i), self.sizes[i], self.ratios[i],
                 getattr(self, 'class_pred_func_%d' % i),
                 getattr(self, 'bbox_pred_func_%d' % i))
-        
+
         return (nd.concat(*anchors, dim=1),
                 concat_pred(class_preds).reshape((0, -1, self.num_classes+1)),
                 concat_pred(bbox_preds))
-    
+
     def export(self, prefix, epoch=0):
         X = mx.nd.ones((1,3,256,256), ctx=ctx)
         for i in range(5):
@@ -143,7 +143,7 @@ class obj_ssd(nn.HybridBlock):
             file_prefix = prefix + '_class_pred_func_' + str(i)
             net.export(file_prefix, epoch=epoch)
 
-            
+
             net = getattr(self, 'bbox_pred_func_%d' % i)
             net.hybridize()
             net(fmap)
@@ -154,7 +154,7 @@ class obj_ssd(nn.HybridBlock):
 
         # ssd_net.hybridize()
         # ssd_net.export('zcz_ssd_net')
-    
+
 
 class_loss = gloss.SoftmaxCrossEntropyLoss()
 bbox_loss = gloss.L1Loss()
@@ -162,7 +162,7 @@ bbox_loss = gloss.L1Loss()
 def focal_loss(gamma, x, label):
     return -(label - x) ** gamma * x.log()
 
-def total_loss_func(class_preds, class_labels, 
+def total_loss_func(class_preds, class_labels,
                 bbox_preds, bbox_labels, bbox_masks,
                 sigma=10.0, gamma=5.0):
     class_loss_val = class_loss(class_preds, class_labels)
@@ -259,6 +259,3 @@ if __name__=='__main__':
     ssd_net.export(prefix='zcz_ssd')
     display(img=test_img, output=out_val, threshold=0.3)
 
-
-
-   

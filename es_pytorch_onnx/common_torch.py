@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.axes as axes
+import matplotlib.patches as patches
 from PIL import Image
 import os, time, sys, pickle, tarfile, zipfile
 import logging
@@ -18,7 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 from visdom import Visdom
 # import seaborn
 # seaborn.set()
-
+color_list = ['red', 'aqua', 'darkorange','lime', 'blue', 'purple']
 def try_gpu():
     if torch.cuda.is_available():
         device = torch.device('cuda')

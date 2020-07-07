@@ -26,10 +26,24 @@ if __name__=='__main__':
         print('len(data): ', len(data))
         print('type(data): ', type(data))
         print('data.size(): ', data.size())
-        print('target: ', target)
+        # print('target: ', target)
         img = data.squeeze(0)
         img_plt = trans_func(img).convert('RGB')
-        plt.subplot(2, imgs_one_line, (idx + 1))
+        axes = plt.subplot(2, imgs_one_line, (idx + 1))
+        idx = 0
+        for item in target['annotation']['object']:
+            name = item['name']
+            xmin = int(item['bndbox']['xmin'][0])
+            ymin = int(item['bndbox']['ymin'][0])
+            xmax = int(item['bndbox']['xmax'][0])
+            ymax = int(item['bndbox']['ymax'][0])
+            print('name: ', name)
+            print('(xmin, ymin, xmax, ymax): ', xmin, ymin, xmax, ymax)
+            rect = patches.Rectangle((xmin, ymin), (xmax - xmin), (ymax - ymin),
+                                    linewidth=2, edgecolor=color_list[idx], fill=False)
+            axes.add_patch(rect)
+            idx += 1
+            idx %= len(color_list)
         plt.imshow(img_plt)
         plt.axis('off')
         plt.ioff()
