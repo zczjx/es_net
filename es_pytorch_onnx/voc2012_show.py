@@ -32,7 +32,7 @@ if __name__=='__main__':
         axes = plt.subplot(2, imgs_one_line, (idx + 1))
         idx = 0
         for item in target['annotation']['object']:
-            name = item['name']
+            name = item['name'][0]
             xmin = int(item['bndbox']['xmin'][0])
             ymin = int(item['bndbox']['ymin'][0])
             xmax = int(item['bndbox']['xmax'][0])
@@ -42,6 +42,9 @@ if __name__=='__main__':
             rect = patches.Rectangle((xmin, ymin), (xmax - xmin), (ymax - ymin),
                                     linewidth=2, edgecolor=color_list[idx], fill=False)
             axes.add_patch(rect)
+            axes.text(rect.xy[0], rect.xy[1], name,
+                      va='center', ha='center', color='k',
+                      bbox=dict(facecolor='w'))
             idx += 1
             idx %= len(color_list)
         plt.imshow(img_plt)
