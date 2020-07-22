@@ -24,6 +24,7 @@ if __name__=='__main__':
     labels = batch.label[0][int(sys.argv[1]) : int(sys.argv[2])]
     print('imgs.shape: ', imgs.shape)
     print('labels.shape: ', labels.shape)
+    print('labels: ', labels)
 
     imgs_one_line = int(len(imgs) / 2 + (len(imgs) % 2))
     for idx, image in enumerate(imgs):

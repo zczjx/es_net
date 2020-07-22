@@ -36,4 +36,4 @@ if __name__=='__main__':
             bbox = [row[2:6] * nd.array((w, h, w, h), ctx=row.context)]
             show_bboxes(fig.axes, bbox, '%.2f' % score, 'r')
     plt.show()
- 
+

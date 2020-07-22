@@ -9,7 +9,7 @@ from torch import nn
 import torch.utils.model_zoo as model_zoo
 import torchvision.models as models
 import torch.onnx
-from onnx import checker 
+from onnx import checker
 import onnx
 import logging
 
@@ -38,6 +38,3 @@ if __name__=='__main__':
     # Print a human readable representation of the graph
     onnx.helper.printable_graph(model_proto.graph)
 
-
-
-   
