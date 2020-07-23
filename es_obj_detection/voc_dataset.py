@@ -15,11 +15,11 @@ voc_classes = [
     'motorbike', 'person', 'pottedplant',
     'sheep', 'sofa', 'train', 'tvmonitor']
 
-def load_vocdetection_format_dataset(width=256, height=256, root='~/Datasets/VOCDetection', image_set='train', year='2012'):
+def load_vocdetection_format_dataset(height=256, width=256, root='~/Datasets/VOCDetection', image_set='train', year='2012'):
     """Download the VOC Detection dataset and then load into memory."""
     trans = []
 
-    trans.append(torchvision.transforms.Resize(size=(width, height)))
+    trans.append(torchvision.transforms.Resize(size=(height, width)))
     trans.append(torchvision.transforms.ToTensor())
 
     transform = torchvision.transforms.Compose(trans)
@@ -35,12 +35,9 @@ def load_vocdetection_format_dataset(width=256, height=256, root='~/Datasets/VOC
         height_orig = float(annotation['annotation']['size']['height'])
         width_ratio = width / width_orig
         height_ratio = height / height_orig
-        # print('width_orig: ', width_orig, 'height_orig: ', height_orig)
-        # print('width_ratio: ', width_ratio, 'height_ratio: ', height_ratio)
         labels_list = []
         for item in annotation['annotation']['object']:
             class_idx = voc_classes.index(item['name'])
-            # print('obj name: ', name, ' type(name): ', type(name))
             xmin = int(int(item['bndbox']['xmin']) * width_ratio)
             ymin = int(int(item['bndbox']['ymin']) * height_ratio)
             xmax = int(int(item['bndbox']['xmax']) * width_ratio)
