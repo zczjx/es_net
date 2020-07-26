@@ -113,28 +113,29 @@ if __name__=='__main__':
         raise SystemExit(1)
 
     batch_size = 1
-    width = 256
-    height = 256
+    width = 320
+    height = 240
     # train_iter, validate_iter = load_data_pikachu(batch_size, edge_size)
-    voc2012_train_iter = load_vocdetection_format_dataset(width=width, height=height,
-                                                          image_set='val', year='2012')
+    voc2012_train_iter = load_vocdetection_format_dataset(height=height, width=width,
+                                                          image_set='train', year='2012')
     print('len(voc2012_train_iter): ', len(voc2012_train_iter))
     print('type(voc2012_train_iter): ', type(voc2012_train_iter))
 
     ssd_net = tinyssd(num_classes=len(voc_classes))
 
-
+    '''
     ssd_net.eval()
-    X = torch.rand((batch_size, 3, width, height))
+    X = torch.rand((batch_size, 3, height, width))
     anchors, class_preds, bbox_preds = ssd_net(X)
 
     print('output anchors:', anchors.shape)
     print('output class preds:', class_preds.shape)
     print('output bbox preds:', bbox_preds.shape)
     exit(1)
+    '''
 
 
-    lr = 0.01
+    lr = 0.001
     num_epochs = int(sys.argv[1])
     optimizer  = torch.optim.Adam(ssd_net.parameters(), lr=lr)
 
@@ -142,24 +143,26 @@ if __name__=='__main__':
     for epoch in range(num_epochs):
     # TODO:
         acc_sum, mae_sum, n, m = 0.0, 0.0, 0, 0
-        train_iter.reset()  # 从头读取数据
         start = time.time()
         print('start epoch: %d' % epoch)
-        for batch in train_iter:
-            X = batch.data[0].as_in_context(ctx)
-            Y = batch.label[0].as_in_context(ctx)
-            with autograd.record():
-                # 生成多尺度的锚框，为每个锚框预测类别和偏移量
-                anchors, cls_preds, bbox_preds = ssd_net(X)
+        for data, labels in voc2012_train_iter:
+            print('type(data): ', type(data))
+            print('data.size(): ', data.size())
+            print('type(labels): ', type(labels))
+            print('labels.size(): ', labels.size())
+            X = data.to(device)
+            Y = labels.to(device)
+            # 生成多尺度的锚框，为每个锚框预测类别和偏移量
+            anchors, cls_preds, bbox_preds = ssd_net(X)
                 # 为每个锚框标注类别和偏移量
-                bbox_labels, bbox_masks, cls_labels = contrib.nd.MultiBoxTarget(
-                                    anchors, Y, cls_preds.transpose((0, 2, 1)))
-                # 根据类别和偏移量的预测和标注值计算损失函数
-                loss_func = total_loss_func(cls_preds, cls_labels,
+            bbox_labels, bbox_masks, cls_labels = MultiBoxTarget(anchors, Y)
+            # 根据类别和偏移量的预测和标注值计算损失函数
+            loss_func = total_loss_func(cls_preds, cls_labels,
                                         bbox_preds, bbox_labels,
                                         bbox_masks)
+            optimizer.zero_grad()
             loss_func.backward()
-            trainer.step(batch_size)
+            optimizer.step()
             acc_sum += class_accuracy_eval(cls_preds, cls_labels)
             n += cls_labels.size
             mae_sum += bbox_accuracy_eval(bbox_preds, bbox_labels, bbox_masks)
@@ -169,9 +172,3 @@ if __name__=='__main__':
             print('epoch %2d, class err %.2e, bbox mae %.2e, time %.1f sec' % (
                 epoch + 1, 1 - acc_sum / n, mae_sum / m, time.time() - start))
     print('finish training')
-    test_img = image.imread('./img/pikachu.jpg')
-    feature = image.imresize(test_img, edge_size, edge_size).astype('float32')
-    in_val = feature.transpose((2, 0, 1)).expand_dims(axis=0)
-    out_val = inference(X=in_val, net=ssd_net)
-    ssd_net.export(prefix='zcz_ssd')
-    display(img=test_img, output=out_val, threshold=0.3)

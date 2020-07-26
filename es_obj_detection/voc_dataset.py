@@ -63,7 +63,7 @@ class dataset_process_pool(object):
                 ymax = int(int(item['bndbox']['ymax']) * height_ratio)
                 obj_label = [class_idx, xmin, ymin, xmax, ymax]
                 labels_list.append(obj_label)
-            data_sublist.append(tuple((img, labels_list)))
+            data_sublist.append(tuple((img, torch.tensor(labels_list))))
 
     def get_dataset_list(self):
         for idx in range(0, self.num_thread):
