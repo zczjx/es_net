@@ -18,19 +18,14 @@ def MultiBoxPrior(feature_map, sizes=[0.75, 0.5], ratios=[1, 2, 0.5]):
     Returns:
         anchors of shape (1, num_anchors, 4). 由于batch里每个都一样, 所以第一维为1
     """
-    # pairs = [] # pair of (size, sqrt(ration))
-    '''
+    pairs = [] # pair of (size, sqrt(ration))
+
     for r in ratios:
-        pairs.append([sizes[0], math.sqrt(r)])
+        pairs.append([sizes[0], torch.sqrt(r)])
     for s in sizes[1:]:
-        print('s: ', s)
-        pairs.append([s, math.sqrt(ratios[0])])
-    '''
-    pairs = torch.tensor([[sizes[0], torch.sqrt(ratios[0])],
-                          [sizes[0], torch.sqrt(ratios[1])],
-                          [sizes[0], torch.sqrt(ratios[2])],
-                          [sizes[1], torch.sqrt(ratios[0])]],
-                         device=device)
+        pairs.append([s, torch.sqrt(ratios[0])])
+
+    pairs = torch.tensor(pairs, device=device)
 
     ss1 = pairs[:, 0] * pairs[:, 1] # size * sqrt(ration)
     ss2 = pairs[:, 0] / pairs[:, 1] # size / sqrt(ration)
@@ -46,9 +41,6 @@ def MultiBoxPrior(feature_map, sizes=[0.75, 0.5], ratios=[1, 2, 0.5]):
     shifts = torch.stack((shift_x, shift_y, shift_x, shift_y), dim=1)
 
     anchors = shifts.reshape((-1, 1, 4)) + base_anchors.reshape((1, -1, 4))
-    # print('feature_map.device:', feature_map.device)
-
-    # return torch.tensor(anchors, dtype=torch.float32, device=feature_map.device).view(1, -1, 4)
     return anchors.view(1, -1, 4)
 
 def compute_intersection(set_1, set_2):

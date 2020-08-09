@@ -25,21 +25,28 @@ if __name__=='__main__':
             enable_bbox = True
 
     trans_func = transforms.ToPILImage()
-    batch_size = 1
+    batch_size = 100
     # voc2012_train_iter = load_data_vocdetection(batch_size=batch_size, image_set='train', year='2012')
     width = 320
     height = 240
     # train_iter, validate_iter = load_data_pikachu(batch_size, edge_size)
-    voc2012_val_iter = load_vocdetection_format_dataset(height=height, width=width,
-                                                          image_set='val', year='2012')
+    voc2012_val_iter = load_vocdetection_format_dataset(batch_size=batch_size,
+                                                        height=height, width=width,
+                                                        image_set='val', year='2012')
     # print('len(voc2012_train_iter): ', len(voc2012_train_iter))
     # print('type(voc2012_train_iter): ', type(voc2012_train_iter))
-    # print('len(voc2012_val_iter): ', len(voc2012_val_iter))
-    # print('type(voc2012_val_iter): ', type(voc2012_val_iter))
+    print('len(voc2012_val_iter): ', len(voc2012_val_iter))
+    print('type(voc2012_val_iter): ', type(voc2012_val_iter))
+    imgs_batch, labels_batch = iter(voc2012_val_iter).next()
+    print('len(imgs_batch): ', len(imgs_batch))
+    print('type(imgs_batch): ', type(imgs_batch))
+    print('imgs_batch.shape: ', imgs_batch.shape)
+    print('len(labels_batch): ', len(labels_batch))
+    print('type(labels_batch): ', type(labels_batch))
     imgs_one_line = int(num / 2 + (num % 2))
-
     for idx in range(0, num):
-        data, labels = voc2012_val_iter[idx]
+        data = imgs_batch[idx]
+        labels = labels_batch[idx]
         # print('len(data): ', len(data))
         # print('type(data): ', type(data))
         # print('data.size(): ', data.size())
@@ -50,11 +57,12 @@ if __name__=='__main__':
         axes = plt.subplot(2, imgs_one_line, (idx + 1))
         i = 0
         for item in labels:
-            name = voc_classes[item[0]]
-            xmin = item[1]
-            ymin = item[2]
-            xmax = item[3]
-            ymax = item[4]
+            # print('item[0]: ', int(item[0].item()))
+            name = voc_classes[int(item[0].item())]
+            xmin = int(item[1].item() * width)
+            ymin = int(item[2].item() * height)
+            xmax = int(item[3].item() * width)
+            ymax = int(item[4].item() * height)
             # print('name: ', name)
             # print('(xmin, ymin, xmax, ymax): ', xmin, ymin, xmax, ymax)
             i += 1

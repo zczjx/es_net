@@ -46,8 +46,7 @@ def voc_detection_collate(batch):
 
 def load_vocdetection_format_dataset(batch_size=10, height=256, width=256,
                                      root='~/Datasets/VOCDetection',
-                                     image_set='train', year='2012',
-                                     device=torch.device('cpu')):
+                                     image_set='train', year='2012'):
     """Download the VOC Detection dataset and then load into memory."""
     trans = []
 
@@ -59,7 +58,7 @@ def load_vocdetection_format_dataset(batch_size=10, height=256, width=256,
                                                 image_set=image_set,
                                                 download=False,
                                                 transform=transform)
-    obj_detect_dataset = VocObjDetectDataset(dataset=voc_train, device=device,
+    obj_detect_dataset = VocObjDetectDataset(dataset=voc_train,
                                              height=height, width=width)
     num_workers = 0  # 0表示不用额外的进程来加速读取数据
     train_iter = torch.utils.data.DataLoader(obj_detect_dataset, batch_size=batch_size,
@@ -70,7 +69,7 @@ def load_vocdetection_format_dataset(batch_size=10, height=256, width=256,
 class VocObjDetectDataset(Dataset):
     """VocObjDetect dataset."""
 
-    def __init__(self, dataset, height, width, device=torch.device('cpu')):
+    def __init__(self, dataset, height, width):
         self.num_thread = 8
         self.dateset = dataset
         self.thread_pool = [None] * self.num_thread
@@ -78,7 +77,6 @@ class VocObjDetectDataset(Dataset):
         self.sub_len = int(len(dataset) / self.num_thread)
         self.height = height
         self.width = width
-        self.device = device
 
         start = 0
         for i in range(0, self.num_thread-1):
@@ -134,7 +132,7 @@ class VocObjDetectDataset(Dataset):
                 labels_list.append(obj_label)
             # labels_list = torch.tensor(labels_list)
             # labels_list = torch.unsqueeze(labels_list, 0)
-            data_sublist.append(tuple((img.to(self.device), torch.tensor(labels_list, dtype=torch.float))))
+            data_sublist.append(tuple((img, torch.tensor(labels_list, dtype=torch.float))))
 
     def get_dataset_list(self):
         for idx in range(0, self.num_thread):

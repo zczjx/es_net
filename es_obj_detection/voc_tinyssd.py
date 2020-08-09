@@ -150,8 +150,8 @@ if __name__=='__main__':
         raise SystemExit(1)
 
     batch_size = 32
-    width = 300
-    height = 300
+    width = 320
+    height = 240
     # train_iter, validate_iter = load_data_pikachu(batch_size, edge_size)
     voc2012_train_iter = load_vocdetection_format_dataset(batch_size=batch_size,
                                                           height=height, width=width,
@@ -203,32 +203,11 @@ if __name__=='__main__':
         iter_cnt = 0
         for data, labels in voc2012_train_iter:
             iter_cnt += 1
-            # iter_start = time.time()
-            # print('iter_cnt: ', iter_cnt)
-            # print('labels.size(): ', labels.size())
-            # print('type(X): ', type(X))
-            # print('X.shape: ', X.shape)
-            # print('X.device: ', X.device)
-            # print('X.dtype: ', X.dtype)
-            # func_start = time.time()
+            iter_start = time.time()
             X = data.cuda()
-            # print("X = data.cuda(): %.4f sec" %(time.time() - func_start))
-            # Y = torch.tensor(labels[0]).to(device)
-            # 生成多尺度的锚框，为每个锚框预测类别和偏移量
-            # print('Y.shape:', Y.shape)
-            # func_start = time.time()
             anchors, cls_preds, bbox_preds = ssd_net(X)
-            # print("inference func time: %.4f sec" %(time.time() - func_start))
-                # 为每个锚框标注类别和偏移量
-            # func_start = time.time()
             bbox_labels, bbox_masks, cls_labels = MultiBoxTarget(anchors,
-                                                                 label_list=labels)
-            # print("MultiBoxTarget func time: %.4f sec" %(time.time() - func_start))
-            # bbox_labels = bbox_labels.to(device)
-            # bbox_masks = bbox_masks.to(device)
-            # cls_labels = cls_labels.to(device)
-            # print('bbox_labels.shape:', bbox_labels.shape)
-            # print('bbox_masks.shape:', bbox_masks.shape)
+                                                                label_list=labels)
             # 根据类别和偏移量的预测和标注值计算损失函数
             loss_func = total_loss_func(cls_preds, cls_labels,
                                         bbox_preds, bbox_labels,
@@ -236,17 +215,15 @@ if __name__=='__main__':
             optimizer.zero_grad()
             loss_func.backward()
             optimizer.step()
-            time.sleep(0)
             acc_sum += class_accuracy_eval(cls_preds, cls_labels)
-            # print("class_accuracy_eval func time: %.4f sec" %(time.time() - func_start))
             n += cls_labels.numel()
-            # func_start = time.time()
             mae_sum += bbox_accuracy_eval(bbox_preds, bbox_labels, bbox_masks)
-            # print("bbox_accuracy_eval func time: %.4f sec" %(time.time() - func_start))
             m += bbox_labels.numel()
-            # print("total iter func time: %.4f sec" %(time.time() - iter_start))
+            print("each iter time: %.4f sec" %(time.time() - iter_start))
         print("epoch time: %.2f sec" %(time.time() - start))
         if (epoch + 1) % 5 == 0:
             print('epoch %2d, class err %.2e, bbox mae %.2e, time %.1f sec' % (
                 epoch + 1, 1 - acc_sum.item() / n, mae_sum.item() / m, time.time() - start))
     print('finish training')
+    torch.save(ssd_net.state_dict(), 'voc_tinyssd.pth')
+    print('save model')
