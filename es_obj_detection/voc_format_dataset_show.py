@@ -4,25 +4,29 @@
 import torch
 from torch import nn, optim
 from torchvision import transforms
-import os, time, sys, pickle, getopt
+import os, time, sys, pickle, getopt, argparse
 sys.path.append(os.path.abspath('..'))
 from es_pytorch_onnx.common_torch import *
 from voc_dataset import *
+
+parser = argparse.ArgumentParser(
+    description='show the VOC dataset')
+
+parser.add_argument('-l', '--label', action='store_true',
+                    help='show label in output image')
+
+parser.add_argument('-b', '--bbox', action='store_true',
+                    help='show bbox in output image')
+
+parser.add_argument('num', nargs='?', default=4, type=int,
+                    help='num of images to show')
+
+args = parser.parse_args()
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
         print("pls enter the images num or -l -b to enable label bbox, exam: 4 -l -b")
         raise SystemExit(1)
-
-    num = int(sys.argv[1])
-    opts, args = getopt.getopt(sys.argv[2:], "bl")
-    enable_label = False
-    enable_bbox = False
-    for opt, arg in opts:
-        if opt == '-l':
-            enable_label = True
-        if opt == '-b':
-            enable_bbox = True
 
     trans_func = transforms.ToPILImage()
     batch_size = 100
@@ -43,8 +47,8 @@ if __name__=='__main__':
     print('imgs_batch.shape: ', imgs_batch.shape)
     print('len(labels_batch): ', len(labels_batch))
     print('type(labels_batch): ', type(labels_batch))
-    imgs_one_line = int(num / 2 + (num % 2))
-    for idx in range(0, num):
+    imgs_one_line = int(args.num / 2 + (args.num % 2))
+    for idx in range(0, args.num):
         data = imgs_batch[idx]
         labels = labels_batch[idx]
         # print('len(data): ', len(data))
@@ -69,10 +73,10 @@ if __name__=='__main__':
             i %= len(color_list)
             rect = patches.Rectangle((xmin, ymin), (xmax - xmin), (ymax - ymin),
                                     linewidth=2, edgecolor=color_list[i], fill=False)
-            if enable_bbox == True:
+            if args.bbox == True:
                 axes.add_patch(rect)
 
-            if enable_label == True:
+            if args.label == True:
                 axes.text(rect.xy[0], rect.xy[1], name,
                         va='center', ha='center', color='k',
                         bbox=dict(facecolor='w'))
